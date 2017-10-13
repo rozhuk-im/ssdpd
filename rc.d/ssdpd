@@ -1,0 +1,37 @@
+#!/bin/sh
+### Rozhuk Ivan 2013 - 2015
+### startup script file for ssdpd
+###
+
+
+# PROVIDE: ssdpd
+# REQUIRE: DAEMON
+# BEFORE:  LOGIN
+# KEYWORD: shutdown
+
+. /etc/rc.subr
+
+name="ssdpd"
+rcvar=ssdpd_enable
+
+load_rc_config $name
+
+: ${ssdpd_enable="NO"}
+: ${ssdpd_command="/usr/local/bin/ssdpd"}
+: ${ssdpd_cfgfile="/usr/local/etc/ssdpd.conf"}
+: ${ssdpd_pidfile="/var/run/ssdpd.pid"}
+: ${ssdpd_user="www"}
+: ${ssdpd_group="www"}
+: ${ssdpd_chroot=""}
+: ${ssdpd_chdir=""}
+
+
+command=${ssdpd_command}
+command_args="-d -c ${ssdpd_cfgfile} -P ${ssdpd_pidfile}"
+
+pidfile="${ssdpd_chroot}${ssdpd_pidfile}"
+required_dirs=${ssdpd_chroot}
+required_files="${ssdpd_chroot}${command}"
+
+
+run_rc_command "$1"

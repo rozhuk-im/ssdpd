@@ -1,0 +1,78 @@
+<?xml version ="1.0" encoding ="UTF-8" ?>
+
+<definitions name="ContentDirectory"
+	targetNamespace="urn:schemas-upnp-org:service-1-0"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+
+
+<message name="BrowseIN">
+	<part name="ObjectID" type="xsd:string"/>
+	<part name="BrowseFlag" type="xsd:string"/>
+	<part name="Filter" type="xsd:string"/>
+	<part name="StartingIndex" type="xsd:unsignedInt"/>
+	<part name="RequestedCount" type="xsd:unsignedInt"/>
+	<part name="SortCriteria" type="xsd:string"/>
+</message>
+
+<message name="BrowseOUT">
+	<part name="Result" type="xsd:anySimpleType"/>
+	<part name="NumberReturned" type="xsd:unsignedInt"/>
+	<part name="TotalMatches" type="xsd:unsignedInt"/>
+	<part name="UpdateID" type="xsd:unsignedInt"/>
+</message>
+
+<message name="X_GetFeatureListOUT">
+	<part name="FeatureList" type="xsd:string"/>
+</message>
+
+
+<portType name="BrowseIO">
+	<operation name="Browse">
+		<input message="BrowseIN"/>
+		<output message="BrowseOUT"/>
+	</operation>
+</portType>
+
+<portType name="X_GetFeatureListIO">
+	<operation name="X_GetFeatureList">
+		<output message="X_GetFeatureListOUT"/>
+	</operation>
+</portType>
+
+<binding name="BrowseBinding" type="BrowseIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="Browse">
+		<soap:operation soapAction="urn:ContentDirectory#Browse"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<binding name="X_GetFeatureListBinding" type="X_GetFeatureListIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="X_GetFeatureList">
+		<soap:operation soapAction="urn:ContentDirectory#X_GetFeatureList"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+<service name="ContentDirectory">
+	<port name="BrowsePort" binding="BrowseBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="X_GetFeatureListPort" binding="X_GetFeatureListBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+</service>
+
+
+</definitions>
