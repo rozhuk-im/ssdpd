@@ -53,6 +53,7 @@
 #include "utils/xml.h"
 #include "utils/helpers.h"
 #include "utils/log.h"
+#include "utils/cmd_line_daemon.h"
 #include "net/socket_address.h"
 #include "net/utils.h"
 #include "proto/upnp_ssdp.h"
@@ -89,7 +90,9 @@ main(int argc, char *argv[]) {
 
 
 	if (0 != cmd_line_parse(argc, argv, &cmd_line_data)) {
-		cmd_line_usage(PACKAGE_NAME, PACKAGE_VERSION);
+		cmd_line_usage(PACKAGE_NAME, PACKAGE_VERSION,
+		    "Rozhuk Ivan <rozhuk.im@gmail.com>",
+		    "http://www.netlab.linkpc.net/");
 		return (0);
 	}
 
