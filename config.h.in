@@ -1,47 +1,37 @@
-#ifndef SSDPD_CONFIG_H_IN
-#define SSDPD_CONFIG_H_IN
-
-#cmakedefine DEBUG_MODE		1
-#cmakedefine GIT_VERSION	1
+#ifndef __CONFIG_H_IN__
+#define __CONFIG_H_IN__
 
 
-#define SSDPD_VERSION_MAJOR	"${SSDPD_VERSION_MAJOR}"
-#define SSDPD_VERSION_MINOR	"${SSDPD_VERSION_MINOR}"
-#define SSDPD_VERSION_PATCH	"${SSDPD_VERSION_PATCH}"
+/*--------------------------------------------------------------------*/
+/* API, macros, includes. */
 
-#define SSDPD_VERSION_MAJOR_NUM	${SSDPD_VERSION_MAJOR_NUM}
-#define SSDPD_VERSION_MINOR_NUM	${SSDPD_VERSION_MINOR_NUM}
-#define SSDPD_VERSION_PATCH_NUM	${SSDPD_VERSION_PATCH_NUM}
+/* Includes. */
+#cmakedefine HAVE_SYS_TYPES_H		1
+#cmakedefine HAVE_SYS_TIME_H		1
 
-#define SSDPD_VERSION_BRANCH	"${SSDPD_VERSION_MAJOR}.${SSDPD_VERSION_MINOR}"
+/* API */
+#cmakedefine HAVE_MEMSET_S		1
+#cmakedefine HAVE_EXPLICIT_BZERO	1
+#cmakedefine HAVE_REALLOCARRAY		1
+#cmakedefine HAVE_PIPE2			1
+#cmakedefine HAVE_ACCEPT4		1
 
-#if defined(GIT_VERSION) && GIT_VERSION == 1
-#	define RVERSION			"${SSDPD_VERSION}"
-#	define SSDPD_VERSION_FULL	"${SSDPD_VERSION}_${SSDPD_ID}"
-#	define RID			"${SSDPD_ID}"
-#	define SSDPD_VERSION_NUM	0x${SSDPD_VERSION_MAJOR_NUM}${SSDPD_VERSION_MINOR_NUM}${SSDPD_VERSION_PATCH_NUM}${SSDPD_ID}ULL
-#else
-#	define SSDPD_VERSION_FULL	"${SSDPD_VERSION}"
-#	define RVERSION			"${SSDPD_VERSION}"
-#	define SSDPD_VERSION_NUM	0x${SSDPD_VERSION_MAJOR_NUM}${SSDPD_VERSION_MINOR_NUM}${SSDPD_VERSION_PATCH_NUM}0000000ULL
-#	define RID			"release"
-#endif
-
-#define SSDPD_MASTER_SITE_URL	"${SSDPD_MASTER_SITE_URL}"
-
-#define BUILDROOT		"${CMAKE_BINARY_DIR}"
+/* Macros. */
+#cmakedefine HAVE_PATH_MAX		1
+#cmakedefine HAVE_MAXPATHLEN		1
+#cmakedefine HAVE_SOCK_NONBLOCK		1
 
 
-/*---------------------------------------------------------------------*/
-/* Package information */
+/*--------------------------------------------------------------------*/
+/* Package information. */
 #define PACKAGE			@PROJECT_NAME@
-#define PACKAGE_NAME		@PACKAGE_NAME@
-#define PACKAGE_STRING		@PACKAGE_STRING@
-#define PACKAGE_TARNAME		@PACKAGE_TARNAME@
-#define PACKAGE_VERSION		"@PACKAGE_VERSION@"
 #define VERSION			PACKAGE_VERSION
-#define PACKAGE_BUGREPORT	@PACKAGE_BUGREPORT@
+#define PACKAGE_NAME		"@PACKAGE_NAME@"
+#define PACKAGE_VERSION		"@PACKAGE_VERSION@"
+#define PACKAGE_URL		"@PACKAGE_URL@"
+#define PACKAGE_BUGREPORT	"@PACKAGE_BUGREPORT@"
+#define PACKAGE_STRING		"@PACKAGE_STRING@"
+#define PACKAGE_DESCRIPTION	"@PACKAGE_DESCRIPTION@"
 
 
-
-#endif
+#endif /* __CONFIG_H_IN__ */

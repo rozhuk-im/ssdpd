@@ -57,12 +57,8 @@
 #include "net/socket_address.h"
 #include "net/utils.h"
 #include "proto/upnp_ssdp.h"
-
-
-
 #include "config.h"
-#undef PACKAGE_NAME
-#define PACKAGE_NAME	"SSDP announce daemon for UPnP 1.1"
+
 #define CFG_FILE_MAX_SIZE (1024 * 1024)
 
 
@@ -90,9 +86,9 @@ main(int argc, char *argv[]) {
 
 
 	if (0 != cmd_line_parse(argc, argv, &cmd_line_data)) {
-		cmd_line_usage(PACKAGE_NAME, PACKAGE_VERSION,
+		cmd_line_usage(PACKAGE_DESCRIPTION, PACKAGE_VERSION,
 		    "Rozhuk Ivan <rozhuk.im@gmail.com>",
-		    "http://www.netlab.linkpc.net/");
+		    PACKAGE_URL);
 		return (0);
 	}
 
@@ -157,7 +153,7 @@ main(int argc, char *argv[]) {
 	}
 	fd_set_nonblocking(g_log_fd, 1);
 	log_write("\n\n\n\n", 4);
-	LOG_INFO(PACKAGE_NAME" "PACKAGE_VERSION": started");
+	LOG_INFO(PACKAGE_STRING": started");
 #ifdef DEBUG
 	LOG_INFO("Build: "__DATE__" "__TIME__", DEBUG");
 #else
