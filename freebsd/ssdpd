@@ -1,5 +1,5 @@
 #!/bin/sh
-### Rozhuk Ivan 2013 - 2015
+### Rozhuk Ivan 2013 - 2017
 ### startup script file for ssdpd
 ###
 
@@ -17,9 +17,9 @@ rcvar=ssdpd_enable
 load_rc_config $name
 
 : ${ssdpd_enable="NO"}
-: ${ssdpd_command="/usr/local/bin/ssdpd"}
-: ${ssdpd_cfgfile="/usr/local/etc/ssdpd.conf"}
-: ${ssdpd_pidfile="/var/run/ssdpd.pid"}
+: ${ssdpd_command="@CMAKE_INSTALL_PREFIX@/bin/ssdpd"}
+: ${ssdpd_cfgfile="@CONFDIR@/ssdpd.conf"}
+: ${ssdpd_pidfile="@RUNDIR@/ssdpd.pid"}
 : ${ssdpd_user="www"}
 : ${ssdpd_group="www"}
 : ${ssdpd_chroot=""}

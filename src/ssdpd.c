@@ -51,7 +51,8 @@
 #include "utils/mem_utils.h"
 #include "utils/str2num.h"
 #include "utils/xml.h"
-#include "utils/helpers.h"
+#include "utils/buf_str.h"
+#include "utils/sys.h"
 #include "utils/log.h"
 #include "utils/cmd_line_daemon.h"
 #include "net/socket_address.h"
@@ -91,6 +92,9 @@ main(int argc, char *argv[]) {
 		    PACKAGE_URL);
 		return (0);
 	}
+	if (0 != cmd_line_data.daemon) {
+		make_daemon();
+	}
 
     { // process config file
 	const uint8_t *data, *ptm, *cur_pos, *cur_svc_pos, *cur_if_pos, *ann_data, *svc_data;
@@ -110,7 +114,7 @@ main(int argc, char *argv[]) {
 	tp_settings_t tp_s;
 
 
-	error = read_file(cmd_line_data.cfg_file_name, 0, CFG_FILE_MAX_SIZE,
+	error = read_file(cmd_line_data.cfg_file_name, 0, 0, 0, CFG_FILE_MAX_SIZE,
 	    &cfg_file_buf, &cfg_file_buf_size);
 	if (0 != error) {
 		g_log_fd = (uintptr_t)open("/dev/stdout", (O_WRONLY | O_APPEND));
@@ -203,7 +207,7 @@ main(int argc, char *argv[]) {
 	    "httpServer", NULL) &&
 	    0 != data_size &&
 	    (sizeof(ssdp_st.http_server) - 1) > data_size) {
-		ssdp_st.http_server_size = (uint32_t)data_size;
+		ssdp_st.http_server_size = data_size;
 		memcpy(ssdp_st.http_server, data, data_size);
 	}
 	/* Create SSDP receiver. */
@@ -223,7 +227,7 @@ main(int argc, char *argv[]) {
 		if (0 != xml_get_val_args(ann_data, ann_data_size, NULL,
 		    NULL, NULL, &data, &data_size, (const uint8_t*)"xmlDevDescr", NULL))
 			continue; /* No xml file with UPnP dev description. */
-		error = read_file((const char*)data, data_size, CFG_FILE_MAX_SIZE,
+		error = read_file((const char*)data, data_size, 0, 0, CFG_FILE_MAX_SIZE,
 		    &cfg_dev_buf, &cfg_dev_buf_size);
 		if (0 != error) {
 			LOG_ERR(error, "xmlDevDescr read_file()");
@@ -238,7 +242,7 @@ main(int argc, char *argv[]) {
 			free(cfg_dev_buf);
 			continue;
 		}
-		uuid += 5; /* Skeep "uuid:". */
+		uuid += 5; /* Skip "uuid:". */
 		if (0 != xml_get_val_args(cfg_dev_buf, cfg_dev_buf_size, NULL,
 		    NULL, NULL, &data, &data_size,
 		    (const uint8_t*)"root", "device", "deviceType", NULL)) {
@@ -248,17 +252,17 @@ no_dev_type:
 			continue;
 		}
 		/* Parce: "urn:schemas-upnp-org:device:MediaServer:3". */
-		domain_name = (data + 4); /* Skeep "urn:". */
+		domain_name = (data + 4); /* Skip "urn:". */
 		ptm = mem_chr_off(5, data, data_size, ':');
 		if (NULL == ptm)
 			goto no_dev_type;
 		domain_name_size = (size_t)(ptm - domain_name);
-		type = (ptm + 8); /* Skeep ":device:". */
+		type = (ptm + 8); /* Skip ":device:". */
 		ptm = mem_chr_ptr(type, data, data_size, ':');
 		if (NULL == ptm)
 			goto no_dev_type;
 		type_size = (size_t)(ptm - type);
-		ptm += 1; /* Skeep ":". */
+		ptm += 1; /* Skip ":". */
 		ver = ustr2u32(ptm, (size_t)(data_size - (size_t)(ptm - data)));
 
 		config_id = 1; /* XXX not read. */
@@ -291,17 +295,17 @@ no_svc_type:
 				continue;
 			}
 			/* Parce: "urn:schemas-upnp-org:service:ContentDirectory:3". */
-			domain_name = (data + 4); /* Skeep "urn:". */
+			domain_name = (data + 4); /* Skip "urn:". */
 			ptm = mem_chr_off(5, data, data_size, ':');
 			if (NULL == ptm)
 				goto no_svc_type;
 			domain_name_size = (size_t)(ptm - domain_name);
-			type = (ptm + 9); /* Skeep ":service:". */
+			type = (ptm + 9); /* Skip ":service:". */
 			ptm = mem_chr_ptr(type, data, data_size, ':');
 			if (NULL == ptm)
 				goto no_svc_type;
 			type_size = (size_t)(ptm - type);
-			ptm += 1; /* Skeep ":". */
+			ptm += 1; /* Skip ":". */
 			ver = ustr2u32(ptm, (size_t)(data_size - (size_t)(ptm - data)));
 			/* Add service to device. */
 			error = upnp_ssdp_svc_add(dev,
@@ -416,9 +420,9 @@ no_svc_type:
 
 	tp_signal_handler_add_tp(tp);
 	signal_install(tp_signal_handler);
-	write_pid(cmd_line_data.pid_file_name); // Store pid to file
 
-	set_user_and_group(cmd_line_data.pw_uid, cmd_line_data.pw_gid); // drop rights
+	write_pid(cmd_line_data.pid_file_name); /* Store pid to file. */
+	set_user_and_group(cmd_line_data.pw_uid, cmd_line_data.pw_gid); /* Drop rights. */
 
 	/* Receive and process packets. */
 	tp_thread_attach_first(tp);
@@ -427,9 +431,9 @@ no_svc_type:
 err_out:
 	/* Deinitialization... */
 	upnp_ssdp_destroy(upnp_ssdp);
-	if (NULL != cmd_line_data.pid_file_name)
-		unlink(cmd_line_data.pid_file_name); // Remove pid file
-
+	if (NULL != cmd_line_data.pid_file_name) {
+		unlink(cmd_line_data.pid_file_name); /* Remove pid file. */
+	}
 	tp_destroy(tp);
 	LOG_INFO("exiting.");
 	close(log_fd);

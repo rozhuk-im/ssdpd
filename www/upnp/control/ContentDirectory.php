@@ -38,18 +38,10 @@
 
 /* xml-SOAP MediaServer/ContentDirectory:3 for UPnP/DLNA */
 
-/*
- * Change log
- *
- * = 25.06.2013
- * * Initial release
- */
-
-
  
 /* Config.*/
-$basedir="/usr/DataStore";	/* File system path. */
-$baseurl="/DataStore";		/* WEB URL path. */
+$basedir = dirname(__FILE__)."/../../upnpdata";	/* File system path. */
+$baseurl = "/upnpdata";				/* WEB URL path. */
 
 date_default_timezone_set('UTC');
 
@@ -165,7 +157,7 @@ function upnp_get_class($file, $def) {
 	if (FALSE === $dot)
 		return ($def);
 	$ext = strtolower(substr($file, ($dot + 1)));
-	if (isset($file_class[$ext])) /* Skeep unsupported file type. */
+	if (isset($file_class[$ext])) /* Skip unsupported file type. */
 		return ($file_class[$ext]);
 
 	return ($def);
@@ -270,7 +262,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 		    substr($ObjectID, 0, 1) === '0' ||
 		    substr($ObjectID, 0, 1) === 'V' ||
 		    substr($ObjectID, 0, 1) === 'I' ||
-		    substr($ObjectID, 0, 1) === 'A')) { // V, I, A - from X_GetFeatureList()
+		    substr($ObjectID, 0, 1) === 'A')) { /* V, I, A - from X_GetFeatureList() */
 			$dir = "";
 		} else {
 			$dir = rawurldecode(xml_decode($ObjectID));
@@ -302,7 +294,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 	}
 
 	if (!is_dir($basedir.$dir)) { /* Play list file? */
-		// Open the file
+		/* Open the file. */
 		$channels_cnt = 0;
 		$dir = substr($dir, 0, (strlen($dir) - 1));
 		$fd = fopen($basedir.$dir, "r");
@@ -321,11 +313,11 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 
 		$logo_url_path = "http://iptvremote.ru/channels/android/160/";
 		//$logo_url_path = "http://172.16.0.254/download/tmp/image/";
-		while (!feof($fd)) { // read the file line by line...
+		while (!feof($fd)) { /* Read the file line by line... */
 			$buffer = trim(fgets($fd));
 			//if($buffer === false)
 			//	break;
-			if (false === strpos($buffer, '#EXTINF:')) { /* Skeep empty/bad lines. */
+			if (false === strpos($buffer, '#EXTINF:')) { /* Skip empty/bad lines. */
 				/*if (false !== strpos($buffer, "#EXTM3U")) {
 					$logo_url_path = get_named_val("url-tvg-logo", $buffer);
 					if (null !== $logo_url_path) {
@@ -341,7 +333,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$entry = trim(fgets($fd));
 			if (false === strpos($entry, '://'))
 				continue;
-			if (0 < $StartingIndex) { /* Skeep first items. */
+			if (0 < $StartingIndex) { /* Skip first items. */
 				$StartingIndex --;
 				continue;
 			}
@@ -358,8 +350,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 				$Result = $Result .
 				    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"0\">\n" .
 				    "		<dc:title>$title</dc:title>\n" .
-				    "		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
-				    "		<upnp:icon>$icon_url</upnp:icon>\n" .
+				    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
+				    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 				    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
 				    "	</container>\n";
 			} else {
@@ -372,8 +364,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 				    "	<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"0\">\n" .
 				    "		<dc:title>$title</dc:title>\n" .
 				    "		<dc:date>$date</dc:date>\n" .
-				    "		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
-				    "		<upnp:icon>$icon_url</upnp:icon>\n" .
+				    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
+				    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 				    "		<upnp:class>$iclass</upnp:class>\n" .
 				    "		<res protocolInfo=\"http-get:*:$mimetype:*\">$en_entry</res>\n" .
 				    "	</item>\n";
@@ -396,9 +388,9 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 	$channels_cnt = 0;
 	/* Add dirs to play list. */
 	foreach ($entries as $entry) {
-		if (substr($entry, 0, 1) === '.' || !is_dir($basedir.$dir.$entry)) /* Skeep files. */
+		if (substr($entry, 0, 1) === '.' || !is_dir($basedir.$dir.$entry)) /* Skip files. */
 			continue;
-		if (0 < $StartingIndex) { /* Skeep first items. */
+		if (0 < $StartingIndex) { /* Skip first items. */
 			$StartingIndex --;
 			continue;
 		}
@@ -407,8 +399,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 		$Result = $Result .
 		    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"0\">\n" .
 		    "		<dc:title>$title</dc:title>\n" .
-		    "		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
-		    "		<upnp:icon>$icon_url</upnp:icon>\n" .
+		    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
+		    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 		    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
 		    "	</container>\n";
 		$channels_cnt ++;
@@ -416,12 +408,12 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 	/* Add files to play list. */
 	foreach ($entries as $entry) {
 		$filename = $basedir.$dir.$entry;
-		if (is_dir($filename)) /* Skeep dirs. */
+		if (is_dir($filename)) /* Skip dirs. */
 			continue;
 		$iclass = upnp_get_class($entry, null);
-		if (null === $iclass) /* Skeep unsupported file type. */
+		if (null === $iclass) /* Skip unsupported file type. */
 			continue;
-		if (0 < $StartingIndex) { /* Skeep first items. */
+		if (0 < $StartingIndex) { /* Skip first items. */
 			$StartingIndex --;
 			continue;
 		}
@@ -431,8 +423,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$Result = $Result .
 			    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"0\">\n" .
 			    "		<dc:title>$title</dc:title>\n" .
-			    "		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
-			    "		<upnp:icon>$icon_url</upnp:icon>\n" .
+			    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
+			    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 			    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
 			    "	</container>\n";
 		} else {
@@ -444,9 +436,9 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			    "	<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"0\">\n" .
 			    "		<dc:title>$title</dc:title>\n" .
 			    "		<dc:date>$date</dc:date>\n" .
-			    "		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
-			    "		<upnp:icon>$icon_url</upnp:icon>\n" .
-			//    "		<dc:creator>Rozhuk Ivan</dc:creator>\n" .
+			    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
+			    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
+			    //"		<dc:creator>Rozhuk Ivan</dc:creator>\n" .
 			    "		<upnp:class>$iclass</upnp:class>\n" .
 			    "		<res size=\"$size\" protocolInfo=\"http-get:*:$mimetype:*\">$en_entry</res>\n" .
 			    "	</item>\n";
