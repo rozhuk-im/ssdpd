@@ -107,3 +107,12 @@ service nginx restart
 Place shared data in: %%DATADIR%%/www/upnpdata
 or make in as simlink on existing data.
 Make sure that permissions allow www access.
+
+
+### Firewall
+### ssdpd
+Allow all IPv4 with options proto igmp.
+Allow all udp dst port 1900.
+
+### PHP UPnP server
+Allow in tcp dst port 80.
