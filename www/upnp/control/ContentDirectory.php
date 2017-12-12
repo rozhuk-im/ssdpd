@@ -37,6 +37,7 @@
  */
 
 /* xml-SOAP MediaServer/ContentDirectory:3 for UPnP/DLNA */
+/* http://upnp.org/specs/av/UPnP-av-ContentDirectory-v3-Service.pdf */
 
  
 /* Config.*/
@@ -239,11 +240,57 @@ function upnp_mime_content_type($filename) {
 
 /* ContentDirectory funcs */
 
+function GetSearchCapabilities() {
+	$SearchCaps = ""; /* dc:title,upnp:class,upnp:artist */
+
+	return ($SearchCaps);
+}
+
+
+function GetSortCapabilities() {
+	$SortCaps = "";
+	/* dc:title,upnp:genre,upnp:album,dc:creator,res@size,
+	 * res@duration,res@bitrate,dc:publisher,
+	 * upnp:originalTrackNumber,dc:date,upnp:producer,upnp:rating,
+	 * upnp:actor,upnp:director,dc:description
+	 */
+
+	return ($SortCaps);
+}
+
+
+function GetSortExtensionCapabilities() {
+	$SortExtensionCaps = "";
+
+	return ($SortExtensionCaps);
+}
+
+
+function GetFeatureList() {
+	$FeatureList = "";
+
+	return ($FeatureList);
+}
+
+
+function GetSystemUpdateID() {
+	$Id = "1";
+
+	return ($Id);
+}
+
+
+function GetServiceResetToken() {
+	$ResetToken = "";
+
+	return ($ResetToken);
+}
+
+
 function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount,
     $SortCriteria) {
 	global $basedir, $baseurl, $file_class, $baseurlpatch;
-	$Result =
-		    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
+	$Result =   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
 		    "<DIDL-Lite\n" .
 		    " xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n" .
 		    " xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\"\n" .
@@ -453,6 +500,49 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 	return (array('Result' => $Result, 'NumberReturned' => $NumberReturned, 'TotalMatches' => $TotalMatches, 'UpdateID' => $UpdateID));
 }
 
+
+function Search($ContainerID, $SearchCriteria, $Filter, $StartingIndex, $RequestedCount,
+    $SortCriteria) {
+	global $basedir, $baseurl, $file_class, $baseurlpatch;
+	$Result =   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
+		    "<DIDL-Lite\n" .
+		    " xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n" .
+		    " xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\"\n" .
+		    " xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\"\n" .
+		    " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" .
+		    " xsi:schemaLocation=\"\n" .
+		    "	urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd\n" .
+		    "	urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd\">\n";
+	$NumberReturned = 0;
+	$TotalMatches = 0;
+	$UpdateID = 1;
+
+	$Result = $Result . "</DIDL-Lite>\n";
+
+	return (array('Result' => $Result, 'NumberReturned' => $NumberReturned, 'TotalMatches' => $TotalMatches, 'UpdateID' => $UpdateID));
+}
+
+
+function CreateObject($ContainerID, $Elements) {
+	$ObjectID = "";
+	$Result = "";
+
+	return (array('ObjectID' => $ObjectID, 'Result' => $Result));
+}
+
+
+function DestroyObject($ObjectID) {
+}
+
+
+function UpdateObject($ObjectID, $CurrentTagValue, $NewTagValue) {
+}
+
+
+function MoveObject($ObjectID, $NewParentID, $NewObjectID) {
+}
+
+
 /* Samsung private. */
 function X_GetFeatureList() {
 	$FeatureList = 
@@ -475,7 +565,20 @@ $server = new SoapServer(dirname(__FILE__)."/../descr/ContentDirectory.wdsl",
 			'trace' => true
 		));
 
-$server->addFunction(array("Browse", "X_GetFeatureList")); 
+$server->addFunction(array(	"GetSearchCapabilities",
+				"GetSortCapabilities",
+				"GetSortExtensionCapabilities",
+				"GetFeatureList",
+				"GetSystemUpdateID",
+				"GetServiceResetToken",
+				"Browse",
+				"Search",
+				"CreateObject",
+				"DestroyObject",
+				"UpdateObject",
+				"MoveObject",
+				"X_GetFeatureList"
+			)); 
 $server->handle(); 
 
 

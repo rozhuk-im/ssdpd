@@ -10,6 +10,132 @@
 
 
 
+<message name="GetSearchCapabilitiesOUT">
+	<part name="SearchCaps" type="xsd:string"/>
+</message>
+
+<portType name="GetSearchCapabilitiesIO">
+	<operation name="GetSearchCapabilities">
+		<output message="GetSearchCapabilitiesOUT"/>
+	</operation>
+</portType>
+
+<binding name="GetSearchCapabilitiesBinding" type="GetSearchCapabilitiesIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="GetSearchCapabilities">
+		<soap:operation soapAction="urn:ContentDirectory#GetSearchCapabilities"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="GetSortCapabilitiesOUT">
+	<part name="SortCaps" type="xsd:string"/>
+</message>
+
+<portType name="GetSortCapabilitiesIO">
+	<operation name="GetSortCapabilities">
+		<output message="GetSortCapabilitiesOUT"/>
+	</operation>
+</portType>
+
+<binding name="GetSortCapabilitiesBinding" type="GetSortCapabilitiesIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="GetSortCapabilities">
+		<soap:operation soapAction="urn:ContentDirectory#GetSortCapabilities"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="GetSortExtensionCapabilitiesOUT">
+	<part name="SortExtensionCaps" type="xsd:string"/>
+</message>
+
+<portType name="GetSortExtensionCapabilitiesIO">
+	<operation name="GetSortExtensionCapabilities">
+		<output message="GetSortExtensionCapabilitiesOUT"/>
+	</operation>
+</portType>
+
+<binding name="GetSortExtensionCapabilitiesBinding" type="GetSortExtensionCapabilitiesIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="GetSortExtensionCapabilities">
+		<soap:operation soapAction="urn:ContentDirectory#GetSortExtensionCapabilities"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="GetFeatureListOUT">
+	<part name="FeatureList" type="xsd:string"/>
+</message>
+
+<portType name="GetFeatureListIO">
+	<operation name="GetFeatureList">
+		<output message="GetFeatureListOUT"/>
+	</operation>
+</portType>
+
+<binding name="GetFeatureListBinding" type="GetFeatureListIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="GetFeatureList">
+		<soap:operation soapAction="urn:ContentDirectory#GetFeatureList"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="GetSystemUpdateIDOUT">
+	<part name="Id" type="xsd:string"/>
+</message>
+
+<portType name="GetSystemUpdateIDIO">
+	<operation name="GetSystemUpdateID">
+		<output message="GetSystemUpdateIDOUT"/>
+	</operation>
+</portType>
+
+<binding name="GetSystemUpdateIDBinding" type="GetSystemUpdateIDIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="GetSystemUpdateID">
+		<soap:operation soapAction="urn:ContentDirectory#GetSystemUpdateID"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="GetServiceResetTokenOUT">
+	<part name="ResetToken" type="xsd:string"/>
+</message>
+
+<portType name="GetServiceResetTokenIO">
+	<operation name="GetServiceResetToken">
+		<output message="GetServiceResetTokenOUT"/>
+	</operation>
+</portType>
+
+<binding name="GetServiceResetTokenBinding" type="GetServiceResetTokenIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="GetServiceResetToken">
+		<soap:operation soapAction="urn:ContentDirectory#GetServiceResetToken"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
 <message name="BrowseIN">
 	<part name="ObjectID" type="xsd:string"/>
 	<part name="BrowseFlag" type="xsd:string"/>
@@ -26,21 +152,10 @@
 	<part name="UpdateID" type="xsd:unsignedInt"/>
 </message>
 
-<message name="X_GetFeatureListOUT">
-	<part name="FeatureList" type="xsd:string"/>
-</message>
-
-
 <portType name="BrowseIO">
 	<operation name="Browse">
 		<input message="BrowseIN"/>
 		<output message="BrowseOUT"/>
-	</operation>
-</portType>
-
-<portType name="X_GetFeatureListIO">
-	<operation name="X_GetFeatureList">
-		<output message="X_GetFeatureListOUT"/>
 	</operation>
 </portType>
 
@@ -55,6 +170,145 @@
 
 
 
+<message name="SearchIN">
+	<part name="ContainerID" type="xsd:string"/>
+	<part name="SearchCriteria" type="xsd:string"/>
+	<part name="Filter" type="xsd:string"/>
+	<part name="StartingIndex" type="xsd:unsignedInt"/>
+	<part name="RequestedCount" type="xsd:unsignedInt"/>
+	<part name="SortCriteria" type="xsd:string"/>
+</message>
+
+<message name="SearchOUT">
+	<part name="Result" type="xsd:anySimpleType"/>
+	<part name="NumberReturned" type="xsd:unsignedInt"/>
+	<part name="TotalMatches" type="xsd:unsignedInt"/>
+	<part name="UpdateID" type="xsd:unsignedInt"/>
+</message>
+
+<portType name="SearchIO">
+	<operation name="Search">
+		<input message="SearchIN"/>
+		<output message="SearchOUT"/>
+	</operation>
+</portType>
+
+<binding name="SearchBinding" type="SearchIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="Search">
+		<soap:operation soapAction="urn:ContentDirectory#Search"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="CreateObjectIN">
+	<part name="ContainerID" type="xsd:string"/>
+	<part name="Elements" type="xsd:anySimpleType"/>
+</message>
+
+<message name="CreateObjectOUT">
+	<part name="ObjectID" type="xsd:string"/>
+	<part name="Result" type="xsd:anySimpleType"/>
+</message>
+
+<portType name="CreateObjectIO">
+	<operation name="CreateObject">
+		<input message="CreateObjectIN"/>
+		<output message="CreateObjectOUT"/>
+	</operation>
+</portType>
+
+<binding name="CreateObjectBinding" type="CreateObjectIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="CreateObject">
+		<soap:operation soapAction="urn:ContentDirectory#CreateObject"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="DestroyObjectIN">
+	<part name="ObjectID" type="xsd:string"/>
+</message>
+
+<portType name="DestroyObjectIO">
+	<operation name="DestroyObject">
+		<input message="DestroyObjectIN"/>
+	</operation>
+</portType>
+
+<binding name="DestroyObjectBinding" type="DestroyObjectIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="DestroyObject">
+		<soap:operation soapAction="urn:ContentDirectory#DestroyObject"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="UpdateObjectIN">
+	<part name="ObjectID" type="xsd:string"/>
+	<part name="CurrentTagValue" type="xsd:anySimpleType"/>
+	<part name="NewTagValue" type="xsd:anySimpleType"/>
+</message>
+
+<portType name="UpdateObjectIO">
+	<operation name="UpdateObject">
+		<input message="UpdateObjectIN"/>
+	</operation>
+</portType>
+
+<binding name="UpdateObjectBinding" type="UpdateObjectIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="UpdateObject">
+		<soap:operation soapAction="urn:ContentDirectory#UpdateObject"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="MoveObjectIN">
+	<part name="ObjectID" type="xsd:string"/>
+	<part name="NewParentID" type="xsd:string"/>
+	<part name="NewObjectID" type="xsd:string"/>
+</message>
+
+<portType name="MoveObjectIO">
+	<operation name="MoveObject">
+		<input message="MoveObjectIN"/>
+	</operation>
+</portType>
+
+<binding name="MoveObjectBinding" type="MoveObjectIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="MoveObject">
+		<soap:operation soapAction="urn:ContentDirectory#MoveObject"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
+<message name="X_GetFeatureListOUT">
+	<part name="FeatureList" type="xsd:string"/>
+</message>
+
+<portType name="X_GetFeatureListIO">
+	<operation name="X_GetFeatureList">
+		<output message="X_GetFeatureListOUT"/>
+	</operation>
+</portType>
+
 <binding name="X_GetFeatureListBinding" type="X_GetFeatureListIO">
 	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
 	<operation name="X_GetFeatureList">
@@ -65,8 +319,42 @@
 </binding>
 
 
+
 <service name="ContentDirectory">
+	<port name="GetSearchCapabilitiesPort" binding="GetSearchCapabilitiesBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="GetSortCapabilitiesPort" binding="GetSortCapabilitiesBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="GetSortExtensionCapabilitiesPort" binding="GetSortExtensionCapabilitiesBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="GetFeatureListPort" binding="GetFeatureListBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="GetSystemUpdateIDPort" binding="GetSystemUpdateIDBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="GetServiceResetTokenPort" binding="GetServiceResetTokenBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
 	<port name="BrowsePort" binding="BrowseBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="SearchPort" binding="SearchBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="CreateObjectPort" binding="CreateObjectBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="DestroyObjectPort" binding="DestroyObjectBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="UpdateObjectPort" binding="UpdateObjectBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="MoveObjectPort" binding="MoveObjectBinding">
 		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
 	</port>
 	<port name="X_GetFeatureListPort" binding="X_GetFeatureListBinding">

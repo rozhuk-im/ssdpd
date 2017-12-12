@@ -39,3 +39,21 @@ USER-AGENT: 6.1.7601 2/Service Pack 1, UPnP/1.0, Portable SDK for UPnP devices/1
 </s:Envelope>
 
 
+
+POST /upnp/control/ContentDirectory.php HTTP/1.1
+HOST:172.16.0.254:80
+Accept: */*
+CONTENT-LENGTH: 313
+CONTENT-TYPE: text/xml; charset="utf-8"
+USER-AGENT: DLNADOC/1.50 SEC_HHP_[TV] Samsung 8 Series (65)/1.0 UPnP/1.0
+SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#GetSearchCapabilities"
+Connection: close
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+<s:Body>
+<u:GetSearchCapabilities xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
+</u:GetSearchCapabilities>
+</s:Body>
+</s:Envelope>
+
