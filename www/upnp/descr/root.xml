@@ -12,7 +12,7 @@
 		<modelDescription>UPnP media service for sharing content.</modelDescription>
 		<modelName>Web UPnP sevice</modelName>
 		<modelNumber>1.0</modelNumber>
-		<modelURL>http://www.netlab.linkpc.net/forum/</modelURL>
+		<modelURL>http://netlab.dhis.org/wiki/en:software:ssdpd:index</modelURL>
 		<serialNumber>1</serialNumber>
 		<UDN>uuid:99c11c71-ba2a-56ee-6fd1-830ff56f149f</UDN>
 		<UPC></UPC>
@@ -38,14 +38,14 @@
 				<serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
 				<serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId>
 				<SCPDURL>/upnp/descr/ConnectionManager.xml</SCPDURL>
-				<controlURL>/upnp/control/ConnectionManager</controlURL>
+				<controlURL>/upnp/control/ConnectionManager.php</controlURL>
 				<eventSubURL>/upnp/subscribe/ConnectionManager</eventSubURL>
 			</service>
 			<service>
 				<serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType>
 				<serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId>
 				<SCPDURL>/upnp/descr/X_MS_MediaReceiverRegistrar.xml</SCPDURL>
-				<controlURL>/upnp/control/X_MS_MediaReceiverRegistrar</controlURL>
+				<controlURL>/upnp/control/X_MS_MediaReceiverRegistrar.php</controlURL>
 				<eventSubURL>/upnp/subscribe/X_MS_MediaReceiverRegistrar</eventSubURL>
 			</service>
 		</serviceList>
