@@ -349,9 +349,13 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 
 	if ($BrowseFlag === 'BrowseMetadata') {
 		$filename = $basedir.$dir;
+
+		/* Is file/dir exist? */
 		$stat = stat($filename);
 		if (false === $stat) /* No such file/dir. */
 			return (array('Result' => '', 'NumberReturned' => 1, 'TotalMatches' => 1, 'UpdateID' => $UpdateID));
+
+		/* Collect data. */
 		if (is_writable($filename)) {
 			$WriteStatus = 'WRITABLE';
 			$Restricted = '0';
@@ -359,6 +363,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$WriteStatus = 'NOT_WRITABLE';
 			$Restricted = '1';
 		}
+		$date = date('c', filectime($filename));
+
 		if (is_dir($filename)) { /* Dir. */
 			$StorageTotal = disk_total_space($filename);
 			$StorageFree = disk_free_space($filename);
@@ -367,6 +373,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$Result = $Result .
 			    "	<container id=\"$ObjectID\" parentID=\"$ParentID\" childCount=\"$ChildCount\" restricted=\"$Restricted\" searchable=\"1\">\n" .
 			    "		<dc:title>Content</dc:title>\n" .
+			    "		<dc:date>$date</dc:date>\n" .
 			    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
 			    "		<upnp:storageTotal>$StorageTotal</upnp:storageTotal>\n" .
 			    "		<upnp:storageFree>$StorageFree</upnp:storageFree>\n" .
@@ -378,7 +385,6 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$title = xml_encode($entry);
 			$iclass = upnp_get_class($entry, 'object.item.videoItem');
 			$size = filesize($filename);
-			$date = date('c', filectime($filename));
 			$mimetype = upnp_mime_content_type($filename);
 			$Result = $Result .
 			    "	<item id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\">\n" .
@@ -413,6 +419,11 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			return (array('Result' => $Result, 'NumberReturned' => 1, 'TotalMatches' => 1, 'UpdateID' => $UpdateID));
 		}
 		$date = date("c", filectime($basedir.$dir));
+		if (is_writable($filename)) {
+			$Restricted = '0';
+		} else {
+			$Restricted = '1';
+		}
 
 		//$logo_url_path = 'http://iptvremote.ru/channels/android/160/';
 		//$logo_url_path = 'http://172.16.0.254/download/tmp/image/';
@@ -453,8 +464,9 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			//$icon_url = '';
 			if ($iclass === 'object.container.storageFolder') { /* Play list as folder! */
 				$Result = $Result .
-				    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"1\">\n" .
+				    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">\n" .
 				    "		<dc:title>$title</dc:title>\n" .
+				    "		<dc:date>$date</dc:date>\n" .
 				    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
 				    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 				    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
@@ -466,7 +478,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 				//}
 				//$icon_url = upnp_url_encode($logo_url_path . mb_convert_case($logo, MB_CASE_LOWER, "UTF-8") . '.png');
 				$Result = $Result .
-				    "	<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"1\">\n" .
+				    "	<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">\n" .
 				    "		<dc:title>$title</dc:title>\n" .
 				    "		<dc:date>$date</dc:date>\n" .
 				    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
@@ -502,17 +514,19 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			continue; /* Do not add more than requested. */
 		$NumberReturned ++;
 		/* Add item to result. */
-		$title = xml_encode($entry);
-		$en_entry = upnp_url_encode($dir.$entry);
+		$date = date('c', filectime($filename));
 		if (is_writable($filename)) {
 			$Restricted = '0';
 		} else {
 			$Restricted = '1';
 		}
+		$title = xml_encode($entry);
+		$en_entry = upnp_url_encode($dir.$entry);
 		$ChildCount = (count(scandir($filename)) - 2);
 		$Result = $Result .
 		    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" childCount=\"$ChildCount\" restricted=\"$Restricted\" searchable=\"1\">\n" .
 		    "		<dc:title>$title</dc:title>\n" .
+		    "		<dc:date>$date</dc:date>\n" .
 		    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
 		    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 		    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
@@ -536,6 +550,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			continue; /* Do not add more than requested. */
 		$NumberReturned ++;
 		/* Add item to result. */
+		$date = date('c', filectime($filename));
 		if (is_writable($filename)) {
 			$Restricted = '0';
 		} else {
@@ -547,6 +562,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$Result = $Result .
 			    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">\n" .
 			    "		<dc:title>$title</dc:title>\n" .
+			    "		<dc:date>$date</dc:date>\n" .
 			    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
 			    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 			    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
@@ -554,7 +570,6 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 		} else {
 			$en_entry = $baseurlpatch.$en_entry; /* Prepend with URM path. */
 			$size = filesize($filename);
-			$date = date('c', filectime($filename));
 			$mimetype = upnp_mime_content_type($filename);
 			$Result = $Result .
 			    "	<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">\n" .
