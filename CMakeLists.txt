@@ -314,6 +314,6 @@ IF(INSTALL_PHP_UPNP_SERVER)
 	INSTALL_CONFIG("nginx/nginx-upnp-full.conf" ${CONFDIR})
 	INSTALL_CONFIG("nginx/nginx-upnp-server.conf" ${CONFDIR})
 	INSTALL_CONFIG("nginx/nginx-upnp-handler.conf" ${CONFDIR})
-	INSTALL_CONFIG("php/php-upnp.conf" "${CMAKE_INSTALL_PREFIX}/etc/php-fpm.d/")
+	INSTALL_CONFIG("php/upnp-php-server.conf" "${CMAKE_INSTALL_PREFIX}/etc/php-fpm.d/")
 ENDIF()
 

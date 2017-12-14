@@ -334,13 +334,15 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			}
 			$dir = $dotdotdir;
 			if (substr($dir, 0, 4) === 'http') { /* Files have full URL, strip it. */
-				$dir = substr($dir, (strpos($dir, $baseurl) + strlen($baseurl)), -1);
+				$pos = strpos($dir, $baseurl, 7); /* http:// */
+				if (false === $pos) /* Probably not our URL. */
+					return (array('Result' => '', 'NumberReturned' => 0, 'TotalMatches' => 0, 'UpdateID' => $UpdateID));
+				$dir = substr($dir, ($pos + strlen($baseurl)), -1);
 			} else {
 				if (substr($dir, 0, 1) === '/' /*|| !is_dir($basedir.$dir)*/) {
 					$dir = '';
 				}
 			}
-			$ParentID = upnp_url_encode(dirname($dir));
 		}
 	} else {
 		$ObjectID = '0';
@@ -353,7 +355,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 		/* Is file/dir exist? */
 		$stat = stat($filename);
 		if (false === $stat) /* No such file/dir. */
-			return (array('Result' => '', 'NumberReturned' => 1, 'TotalMatches' => 1, 'UpdateID' => $UpdateID));
+			return (array('Result' => '', 'NumberReturned' => 0, 'TotalMatches' => 0, 'UpdateID' => $UpdateID));
 
 		/* Collect data. */
 		if (is_writable($filename)) {
@@ -364,6 +366,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$Restricted = '1';
 		}
 		$date = date('c', filectime($filename));
+		$ParentID = upnp_url_encode(dirname($dir));
 
 		if (is_dir($filename)) { /* Dir. */
 			$StorageTotal = disk_total_space($filename);
