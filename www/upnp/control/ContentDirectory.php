@@ -53,10 +53,17 @@ $file_class = array (
 	'xspf' => 'object.container.storageFolder',
 	'xml' => 'object.container.storageFolder',
 
+	'bmp' => 'object.item.imageItem.photo',
 	'gif' => 'object.item.imageItem.photo',
+	'ico' => 'object.item.imageItem.photo',
 	'png' => 'object.item.imageItem.photo',
+	'jpe' => 'object.item.imageItem.photo',
 	'jpg' => 'object.item.imageItem.photo',
 	'jpeg' => 'object.item.imageItem.photo',
+	'tif' => 'object.item.imageItem.photo',
+	'tiff' => 'object.item.imageItem.photo',
+	'svg' => 'object.item.imageItem.photo',
+	'svgz' => 'object.item.imageItem.photo',
 
 	'flac' => 'object.item.audioItem.musicTrack',
 	'mp3' => 'object.item.audioItem.musicTrack', 
@@ -155,7 +162,7 @@ function upnp_get_class($file, $def) {
 	if (!isset($file))
 		return ($def);
 	$dot = strrpos($file, '.');
-	if (FALSE === $dot)
+	if (false === $dot)
 		return ($def);
 	$ext = strtolower(substr($file, ($dot + 1)));
 	if (isset($file_class[$ext])) /* Skip unsupported file type. */
@@ -168,20 +175,18 @@ function upnp_get_class($file, $def) {
 function get_named_val($name, $buf) { /* ...val_name="value"... */
 
 	$st_off = strpos($buf, $name);
-	if (FALSE === $st_off)
+	if (false === $st_off)
 		return (null);
 	$st_off += strlen($name);
 	if (substr($buf, $st_off, 2) !== '="')
 		return (null);
 	$st_off += 2;
 	$en_off = strpos($buf, '"', $st_off);
-	if (-1 === $en_off)
+	if (false === $en_off)
 		return (null);
 
 	return (substr($buf, $st_off, ($en_off - $st_off)));
 }
-
-
 
 
 function upnp_mime_content_type($filename) {
@@ -198,7 +203,7 @@ function upnp_mime_content_type($filename) {
 		'xml' => 'application/xml',
 		'swf' => 'application/x-shockwave-flash',
 
-		// images
+		/* Images. */
 		'png' => 'image/png',
 		'jpe' => 'image/jpeg',
 		'jpeg' => 'image/jpeg',
@@ -211,10 +216,14 @@ function upnp_mime_content_type($filename) {
 		'svg' => 'image/svg+xml',
 		'svgz' => 'image/svg+xml',
 
-		// audio/video
+		/* Audio. */
+		'flac' => 'audio/mpeg',
+		'mp3' => 'audio/mpeg', 
+		'wav' => 'audio/mpeg',
+		'wma' => 'audio/mpeg',
+
+		/* Video. */
 		'flv' => 'video/x-flv',
-		'mp3' => 'audio/mpeg',
-		'mp4' => 'video/mpeg',
 		'qt' => 'video/quicktime',
 		'mov' => 'video/quicktime',
 		'mkv' => 'video/x-mkv',
@@ -222,7 +231,7 @@ function upnp_mime_content_type($filename) {
 	if (!isset($filename))
 		return ($def);
 	$dot = strrpos($filename, '.');
-	if (FALSE === $dot)
+	if (false === $dot)
 		return ($def);
 	$ext = strtolower(substr($filename, ($dot + 1)));
 	if (array_key_exists($ext, $mime_types)) {
@@ -297,8 +306,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 		    " xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\"\n" .
 		    " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" .
 		    " xsi:schemaLocation=\"\n" .
-		    "	urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd\n" .
-		    "	urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd\">\n";
+		    "  urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd\n" .
+		    "  urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd\">\n";
 	$ParentID = '-1';
 	$NumberReturned = 0;
 	$TotalMatches = 0;
@@ -334,7 +343,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			}
 			$dir = $dotdotdir;
 			if (substr($dir, 0, 4) === 'http') { /* Files have full URL, strip it. */
-				$pos = strpos($dir, $baseurl, 7); /* http:// */
+				$pos = strpos($dir, $baseurl, 7); /* 7 = http:// */
 				if (false === $pos) /* Probably not our URL. */
 					return (array('Result' => '', 'NumberReturned' => 0, 'TotalMatches' => 0, 'UpdateID' => $UpdateID));
 				$dir = substr($dir, ($pos + strlen($baseurl)), -1);
@@ -365,6 +374,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$WriteStatus = 'NOT_WRITABLE';
 			$Restricted = '1';
 		}
+		$basefilename = basename($dir);
+		$title = xml_encode($basefilename);
 		$date = date('c', filectime($filename));
 		$ParentID = upnp_url_encode(dirname($dir));
 
@@ -375,7 +386,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$ChildCount = (count(scandir($filename)) - 2);
 			$Result = $Result .
 			    "	<container id=\"$ObjectID\" parentID=\"$ParentID\" childCount=\"$ChildCount\" restricted=\"$Restricted\" searchable=\"1\">\n" .
-			    "		<dc:title>Content</dc:title>\n" .
+			    "		<dc:title>$title</dc:title>\n" .
 			    "		<dc:date>$date</dc:date>\n" .
 			    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
 			    "		<upnp:storageTotal>$StorageTotal</upnp:storageTotal>\n" .
@@ -384,9 +395,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			    "		<upnp:writeStatus>$WriteStatus</upnp:writeStatus>\n" .
 			    "	</container>\n";
 		} else { /* File. */
-			$entry = '';
-			$title = xml_encode($entry);
-			$iclass = upnp_get_class($entry, 'object.item.videoItem');
+			$iclass = upnp_get_class($basefilename, 'object.item.videoItem');
 			$size = filesize($filename);
 			$mimetype = upnp_mime_content_type($filename);
 			$Result = $Result .
@@ -505,7 +514,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 	/* Add dirs to play list. */
 	foreach ($entries as $entry) {
 		$filename = $basedir.$dir.$entry;
-		if (substr($entry, 0, 1) === '.' || !is_dir($filename)) /* Skip files. */
+		if (substr($entry, 0, 1) === '.' ||
+		    !is_dir($filename)) /* Skip files. */
 			continue;
 		/* Ok, item matched and may be returned. */
 		$TotalMatches ++;
@@ -571,15 +581,19 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
 			    "	</container>\n";
 		} else {
-			$en_entry = $baseurlpatch.$en_entry; /* Prepend with URM path. */
+			$en_entry = $baseurlpatch.$en_entry; /* Prepend with URL path. */
 			$size = filesize($filename);
 			$mimetype = upnp_mime_content_type($filename);
 			$Result = $Result .
 			    "	<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">\n" .
 			    "		<dc:title>$title</dc:title>\n" .
-			    "		<dc:date>$date</dc:date>\n" .
-			    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
-			    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
+			    "		<dc:date>$date</dc:date>\n";
+			if (substr($iclass, 0, 21) === 'object.item.imageItem') {
+				$Result = $Result .
+				    "		<upnp:albumArtURI>$en_entry</upnp:albumArtURI>\n" .
+				    "		<upnp:icon>$en_entry</upnp:icon>\n";
+			}
+			$Result = $Result .
 			    //"		<dc:creator>Rozhuk Ivan</dc:creator>\n" .
 			    "		<upnp:class>$iclass</upnp:class>\n" .
 			    "		<res size=\"$size\" protocolInfo=\"http-get:*:$mimetype:*\">$en_entry</res>\n" .
@@ -602,8 +616,8 @@ function Search($ContainerID, $SearchCriteria, $Filter, $StartingIndex, $Request
 		    " xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\"\n" .
 		    " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" .
 		    " xsi:schemaLocation=\"\n" .
-		    "	urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd\n" .
-		    "	urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd\">\n";
+		    "  urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd\n" .
+		    "  urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd\">\n";
 	$NumberReturned = 0;
 	$TotalMatches = 0;
 	$UpdateID = 1;
