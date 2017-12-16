@@ -299,8 +299,7 @@ function GetServiceResetToken() {
 function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount,
     $SortCriteria) {
 	global $basedir, $baseurl, $file_class, $baseurlpatch;
-	$Result =   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
-		    "<DIDL-Lite\n" .
+	$Result =   "<DIDL-Lite\n" .
 		    " xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n" .
 		    " xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\"\n" .
 		    " xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\"\n" .
@@ -616,8 +615,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 function Search($ContainerID, $SearchCriteria, $Filter, $StartingIndex, $RequestedCount,
     $SortCriteria) {
 	global $basedir, $baseurl, $file_class, $baseurlpatch;
-	$Result =   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
-		    "<DIDL-Lite\n" .
+	$Result =   "<DIDL-Lite\n" .
 		    " xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n" .
 		    " xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\"\n" .
 		    " xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\"\n" .
