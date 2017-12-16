@@ -110,7 +110,7 @@ if (substr($basedir, -1, 1) !== '/') {
 }
 $baseurl = implode('/', array_map('rawurlencode', explode('/', $baseurl)));
 $baseurlpatch = 'http://'.$_SERVER['HTTP_HOST'].$baseurl;
-if (substr($baseurlpatch, -1, 1) !== '/') {
+if ('/' !== substr($baseurlpatch, -1, 1)) {
 	$baseurlpatch = $baseurlpatch . '/';
 }
 
@@ -142,8 +142,8 @@ function xml_decode($string) {
 
 function upnp_url_encode($url) {
 
-	if (substr($url, 0, 7) !== 'http://' ||
-	    ($url_path_off = strrpos($url, '/', 8)) === $url_path_off)
+	if ('http://' !== substr($url, 0, 7) ||
+	    false === ($url_path_off = strrpos($url, '/', 8)))
 		return (implode('/', array_map('rawurlencode', explode('/', $url))));
 		//return (xml_encode(implode('/', array_map('rawurlencode', explode('/', $url)))));
 		//return (xml_encode($url));
@@ -178,7 +178,7 @@ function get_named_val($name, $buf) { /* ...val_name="value"... */
 	if (false === $st_off)
 		return (null);
 	$st_off += strlen($name);
-	if (substr($buf, $st_off, 2) !== '="')
+	if ('="' !== substr($buf, $st_off, 2))
 		return (null);
 	$st_off += 2;
 	$en_off = strpos($buf, '"', $st_off);
@@ -315,42 +315,40 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 
 	/* Check input param. */
 	if (isset($ObjectID)) {
-		if (strlen($ObjectID) === 1 && (
-		    substr($ObjectID, 0, 1) === '0' ||
-		    substr($ObjectID, 0, 1) === 'V' ||
-		    substr($ObjectID, 0, 1) === 'I' ||
-		    substr($ObjectID, 0, 1) === 'A')) { /* V, I, A - from X_GetFeatureList() */
+		if (  1 === strlen($ObjectID) && (
+		    '0' === substr($ObjectID, 0, 1) ||
+		    'V' === substr($ObjectID, 0, 1) ||
+		    'I' === substr($ObjectID, 0, 1) ||
+		    'A' === substr($ObjectID, 0, 1))) { /* V, I, A - from X_GetFeatureList() */
 			$ObjectID = '0';
 			$dir = '';
 		} else {
 			$dir = rawurldecode(xml_decode($ObjectID));
-			if (substr($dir, -1, 1) !== '/') {
+			if ('/' !== substr($dir, -1, 1)) {
 				$dir = $dir . '/';
 			}
 			/* Sec check: .. in path */
 			$dotdotdir = '';
 			$dirnames = explode('/', $dir);
 			for ($di = 0; $di < sizeof($dirnames); $di ++) {
-				if ($dirnames[$di] === '.')
+				if ('.' === $dirnames[$di])
 					continue;
-				if ($dirnames[$di] === '..') {
+				if ('..' === $dirnames[$di]) {
 					$dir = '';
 					break;
 				}
-				if ($di < (sizeof($dirnames) - 1)) {
+				if ((sizeof($dirnames) - 1) > $di) {
 					$dotdotdir = $dotdotdir . $dirnames[$di] . '/';
 				}
 			}
 			$dir = $dotdotdir;
-			if (substr($dir, 0, 4) === 'http') { /* Files have full URL, strip it. */
-				$pos = strpos($dir, $baseurl, 7); /* 7 = http:// */
-				if (false === $pos) /* Probably not our URL. */
-					return (array('Result' => '', 'NumberReturned' => 0, 'TotalMatches' => 0, 'UpdateID' => $UpdateID));
-				$dir = substr($dir, ($pos + strlen($baseurl)), -1);
-			} else {
-				if (substr($dir, 0, 1) === '/' /*|| !is_dir($basedir.$dir)*/) {
-					$dir = '';
-				}
+			if ('/' === substr($dir, 0, 1) /*|| !is_dir($basedir.$dir)*/) {
+				$dir = '';
+			}
+			/* Remove tail slash from file name. */
+			if (!is_dir($basedir.$dir) &&
+			    '/' === substr($dir, -1, 1)) {
+				$dir = substr($dir, 0, -1);
 			}
 		}
 	} else {
@@ -358,9 +356,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 		$dir = '';
 	}
 
-	if ($BrowseFlag === 'BrowseMetadata') {
+	if ('BrowseMetadata' === $BrowseFlag) {
 		$filename = $basedir.$dir;
-
 		/* Is file/dir exist? */
 		$stat = stat($filename);
 		if (false === $stat) /* No such file/dir. */
@@ -375,9 +372,14 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$Restricted = '1';
 		}
 		$basefilename = basename($dir);
-		$title = xml_encode($basefilename);
 		$date = date('c', filectime($filename));
-		$ParentID = upnp_url_encode(dirname($dir));
+		if ('0' === $ObjectID) {
+			$title = 'root';
+			$ParentID = '-1';
+		} else {
+			$title = xml_encode($basefilename);
+			$ParentID = upnp_url_encode(dirname($dir));
+		}
 
 		if (is_dir($filename)) { /* Dir. */
 			$StorageTotal = disk_total_space($filename);
@@ -392,8 +394,20 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			    "		<upnp:storageTotal>$StorageTotal</upnp:storageTotal>\n" .
 			    "		<upnp:storageFree>$StorageFree</upnp:storageFree>\n" .
 			    "		<upnp:storageUsed>$StorageUsed</upnp:storageUsed>\n" .
-			    "		<upnp:writeStatus>$WriteStatus</upnp:writeStatus>\n" .
-			    "	</container>\n";
+			    "		<upnp:writeStatus>$WriteStatus</upnp:writeStatus>\n";
+			if ('0' === $ObjectID) {
+				$Result = $Result .
+				    "		<upnp:searchClass includeDerived=\"1\">\n" .
+				    "			object.item.audioItem\n" .
+				    "		</upnp:searchClass>\n" .
+				    "		<upnp:searchClass includeDerived=\"1\">\n" .
+				    "			object.item.imageItem\n" .
+				    "		</upnp:searchClass>\n" .
+				    "		<upnp:searchClass includeDerived=\"1\">\n" .
+				    "			object.item.videoItem\n" .
+				    "		</upnp:searchClass>\n";
+			}
+			$Result = $Result . "	</container>\n";
 		} else { /* File. */
 			$iclass = upnp_get_class($basefilename, 'object.item.videoItem');
 			$size = filesize($filename);
@@ -419,8 +433,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 
 	if (!is_dir($basedir.$dir)) { /* Play list file? */
 		/* Open the file. */
-		$dir = substr($dir, 0, (strlen($dir) - 1));
-		$fd = fopen($basedir.$dir, 'r');
+		$filename = $basedir.$dir;
+		$fd = fopen($filename, 'r');
 		if (false === $fd) {
 			$Result = $Result .
 			    "	<container id=\"111111111\" parentID=\"$ObjectID\" restricted=\"1\">\n" .
@@ -430,7 +444,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$Result = $Result . "</DIDL-Lite>\n";
 			return (array('Result' => $Result, 'NumberReturned' => 1, 'TotalMatches' => 1, 'UpdateID' => $UpdateID));
 		}
-		$date = date("c", filectime($basedir.$dir));
+		$date = date("c", filectime($filename));
 		if (is_writable($filename)) {
 			$Restricted = '0';
 		} else {
@@ -447,9 +461,9 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 				/*if (false !== strpos($buffer, '#EXTM3U')) {
 					$logo_url_path = get_named_val('url-tvg-logo', $buffer);
 					if (null !== $logo_url_path) {
-						if (substr($logo_url_path, -1, 1) !== '/')
+						if ('/' !== substr($logo_url_path, -1, 1))
 							$logo_url_path = $logo_url_path . '/';
-					}else{
+					} else {
 						$logo_url_path = 'http://iptvremote.ru/channels/android/160/';
 						$logo_url_path = 'http://172.16.0.254/download/tmp/image/';
 					}
@@ -473,14 +487,11 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 			$en_entry = upnp_url_encode($entry);
 			$iclass = upnp_get_class($entry, 'object.item.videoItem.videoBroadcast');
 			$mimetype = 'video/mpeg';
-			//$icon_url = '';
-			if ($iclass === 'object.container.storageFolder') { /* Play list as folder! */
+			if ('object.container.storageFolder' === $iclass) { /* Play list as folder! */
 				$Result = $Result .
 				    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">\n" .
 				    "		<dc:title>$title</dc:title>\n" .
 				    "		<dc:date>$date</dc:date>\n" .
-				    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
-				    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 				    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
 				    "	</container>\n";
 			} else {
@@ -506,15 +517,12 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 		return (array('Result' => $Result, 'NumberReturned' => $NumberReturned, 'TotalMatches' => $TotalMatches, 'UpdateID' => $UpdateID));
 	}
 
-	//$icon_url = '/upnp/icons/dev-icon-48x48.png';
-	//$icon_url = implode('/', array_map('rawurlencode', explode('/', '/upnp/icons/dev-icon-48x48.png')));
-
 	/* Scan directory and add to play list.*/
 	$entries = scandir($basedir.$dir);
 	/* Add dirs to play list. */
 	foreach ($entries as $entry) {
 		$filename = $basedir.$dir.$entry;
-		if (substr($entry, 0, 1) === '.' ||
+		if ('.' === substr($entry, 0, 1) ||
 		    !is_dir($filename)) /* Skip files. */
 			continue;
 		/* Ok, item matched and may be returned. */
@@ -540,8 +548,6 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 		    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" childCount=\"$ChildCount\" restricted=\"$Restricted\" searchable=\"1\">\n" .
 		    "		<dc:title>$title</dc:title>\n" .
 		    "		<dc:date>$date</dc:date>\n" .
-		    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
-		    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 		    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
 		    "	</container>\n";
 	}
@@ -571,32 +577,33 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex, $RequestedCount
 		}
 		$title = xml_encode($entry);
 		$en_entry = upnp_url_encode($dir.$entry);
-		if ($iclass === 'object.container.storageFolder') { /* Play list as folder! */
+		if ('object.container.storageFolder' === $iclass) { /* Play list as folder! */
 			$Result = $Result .
 			    "	<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">\n" .
 			    "		<dc:title>$title</dc:title>\n" .
 			    "		<dc:date>$date</dc:date>\n" .
-			    //"		<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>\n" .
-			    //"		<upnp:icon>$icon_url</upnp:icon>\n" .
 			    "		<upnp:class>object.container.storageFolder</upnp:class>\n" .
 			    "	</container>\n";
 		} else {
-			$en_entry = $baseurlpatch.$en_entry; /* Prepend with URL path. */
 			$size = filesize($filename);
 			$mimetype = upnp_mime_content_type($filename);
+			$resolution = '';
 			$Result = $Result .
 			    "	<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">\n" .
 			    "		<dc:title>$title</dc:title>\n" .
-			    "		<dc:date>$date</dc:date>\n";
-			if (substr($iclass, 0, 21) === 'object.item.imageItem') {
+			    "		<dc:date>$date</dc:date>\n" .
+			    "		<upnp:class>$iclass</upnp:class>\n";
+			if ('object.item.imageItem' === substr($iclass, 0, 21)) {
 				$Result = $Result .
-				    "		<upnp:albumArtURI>$en_entry</upnp:albumArtURI>\n" .
-				    "		<upnp:icon>$en_entry</upnp:icon>\n";
+				    "		<upnp:albumArtURI>$baseurlpatch$en_entry</upnp:albumArtURI>\n" .
+				    "		<upnp:icon>$baseurlpatch$en_entry</upnp:icon>\n";
+				$img_info = getimagesize($filename);
+				if (false !== $img_info) {
+					$resolution = 'resolution="' . $img_info[0] . 'x' . $img_info[1] . '"';
+				}
 			}
 			$Result = $Result .
-			    //"		<dc:creator>Rozhuk Ivan</dc:creator>\n" .
-			    "		<upnp:class>$iclass</upnp:class>\n" .
-			    "		<res size=\"$size\" protocolInfo=\"http-get:*:$mimetype:*\">$en_entry</res>\n" .
+			    "		<res size=\"$size\" $resolution protocolInfo=\"http-get:*:$mimetype:*\">$baseurlpatch$en_entry</res>\n" .
 			    "	</item>\n";
 		}
 	}	
@@ -652,10 +659,14 @@ function MoveObject($ObjectID, $NewParentID, $NewObjectID) {
 function X_GetFeatureList() {
 	$FeatureList = 
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
-		"<Features xmlns=\"urn:schemas-upnp-org:av:avs\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd\">\n" .
+		"<Features\n" .
+		" xmlns=\"urn:schemas-upnp-org:av:avs\"\n" .
+		" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" .
+		" xsi:schemaLocation=\"\n" .
+		"  urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd\">\n" .
 		"	<Feature name=\"samsung.com_BASICVIEW\" version=\"1\">\n" .
-		"		<container id=\"I\" type=\"object.item.imageItem\"/>\n" .
 		"		<container id=\"A\" type=\"object.item.audioItem\"/>\n" .
+		"		<container id=\"I\" type=\"object.item.imageItem\"/>\n" .
 		"		<container id=\"V\" type=\"object.item.videoItem\"/>\n" .
 		"		<container id=\"P\" type=\"object.item.playlistItem\"/>\n" .
 		"	</Feature>\n" .
@@ -685,6 +696,5 @@ $server->addFunction(array(	'GetSearchCapabilities',
 				'X_GetFeatureList'
 			)); 
 $server->handle(); 
-
 
 ?>

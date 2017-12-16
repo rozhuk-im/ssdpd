@@ -26,18 +26,6 @@ Connection: close
 
 
 
-POST /upnp/control/ContentDirectory.php HTTP/1.0
-HOST: 172.16.0.254:80
-CONTENT-LENGTH: 656
-CONTENT-TYPE: text/xml;charset="utf-8"
-USER-AGENT: DLNADOC/1.50 SEC_HHP_[TV]UE40D6100/1.0
-SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
-
-<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ObjectID>V</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter>@id,@parentID,@restricted,dc:title,upnp:class,res,dc:date,@childCount,sec:CaptionInfo,sec:CaptionInfoEx, sec:dcmInfo, sec:MetaFileInfo,res@resolution,res@size,upnp:genre,dc:date,upnp:album,res@duration,upnp:albumArtURI,res@bitrate,dc:creator</Filter><StartingIndex>0</StartingIndex><RequestedCount>30</RequestedCount><SortCriteria></SortCriteria></u:Browse></s:Body></s:Envelope>
-
-
-
-
 POST /upnp/control/ContentDirectory.php HTTP/1.1
 HOST: 172.16.0.254:80
 CONTENT-LENGTH: 485
@@ -56,6 +44,18 @@ USER-AGENT: 6.1.7601 2/Service Pack 1, UPnP/1.0, Portable SDK for UPnP devices/1
 </u:Browse>
 </s:Body>
 </s:Envelope>
+
+
+
+
+POST /upnp/control/ContentDirectory.php HTTP/1.0
+HOST: 172.16.0.254:80
+CONTENT-LENGTH: 656
+CONTENT-TYPE: text/xml;charset="utf-8"
+USER-AGENT: DLNADOC/1.50 SEC_HHP_[TV]UE40D6100/1.0
+SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ObjectID>V</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter>@id,@parentID,@restricted,dc:title,upnp:class,res,dc:date,@childCount,sec:CaptionInfo,sec:CaptionInfoEx, sec:dcmInfo, sec:MetaFileInfo,res@resolution,res@size,upnp:genre,dc:date,upnp:album,res@duration,upnp:albumArtURI,res@bitrate,dc:creator</Filter><StartingIndex>0</StartingIndex><RequestedCount>30</RequestedCount><SortCriteria></SortCriteria></u:Browse></s:Body></s:Envelope>
 
 
 

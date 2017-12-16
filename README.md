@@ -30,7 +30,7 @@ make
 
 
 UPnP/DLNA PHP server requires
-1. nginx.
+1. nginx with headers_more.
 2. PHP with fpm, fileinfo, soap, xml.
 
 
