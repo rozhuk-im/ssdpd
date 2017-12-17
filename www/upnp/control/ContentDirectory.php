@@ -41,7 +41,7 @@
 
  
 /* Config.*/
-$basedir = dirname(__FILE__).'/../../upnpdata';	/* File system path. */
+$basedir = dirname(__FILE__) . '/../../upnpdata'; /* File system path. */
 $baseurl = '/upnpdata';				/* WEB URL path. */
 
 date_default_timezone_set('UTC');
@@ -109,7 +109,7 @@ if (substr($basedir, -1, 1) !== '/') {
 	$basedir = $basedir . '/';
 }
 $baseurl = implode('/', array_map('rawurlencode', explode('/', $baseurl)));
-$baseurlpatch = 'http://'.$_SERVER['HTTP_HOST'].$baseurl;
+$baseurlpatch = 'http://' . $_SERVER['HTTP_HOST'].$baseurl;
 if ('/' !== substr($baseurlpatch, -1, 1)) {
 	$baseurlpatch = $baseurlpatch . '/';
 }
@@ -149,9 +149,9 @@ function upnp_url_encode($url) {
 		//return (xml_encode($url));
 		//return ('<![CDATA[' . xml_encode($url) . ']]');
 
-	return (substr($url, 0, $url_path_off).implode('/', array_map('rawurlencode', explode('/', substr($url, $url_path_off)))));
-	//return (substr($url, 0, $url_path_off).xml_encode(implode('/', array_map('rawurlencode', explode('/', substr($url, $url_path_off))))));
-	//return (substr($url, 0, $url_path_off).xml_encode(substr($url, $url_path_off)));
+	return (substr($url, 0, $url_path_off) . implode('/', array_map('rawurlencode', explode('/', substr($url, $url_path_off)))));
+	//return (substr($url, 0, $url_path_off) . xml_encode(implode('/', array_map('rawurlencode', explode('/', substr($url, $url_path_off))))));
+	//return (substr($url, 0, $url_path_off) . xml_encode(substr($url, $url_path_off)));
 	//return ('<![CDATA[$url]]');
 }
 
@@ -246,6 +246,20 @@ function upnp_mime_content_type($filename) {
 	return ($def);
 }
 
+/* Format:
+ * 0: 2005-02-10
+ * 1: 2004-05-08T10:00:00
+ * */
+function upnp_date($timedate, $format) {
+	$res = date('Y-m-d', $timedate);
+
+	if (1 === $format) {
+		$res = $res . 'T' . date('H:i:s', $timedate);
+	}
+
+	return ($res);
+}
+
 
 /* ContentDirectory funcs */
 
@@ -298,15 +312,17 @@ function GetServiceResetToken() {
 
 function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
     $RequestedCount, $SortCriteria) {
-	global $basedir, $baseurl, $file_class, $baseurlpatch;
-	$Result =   "<DIDL-Lite" .
-		    " xmlns:dc=\"http://purl.org/dc/elements/1.1/\"" .
-		    " xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\"" .
-		    " xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\"" .
-		    " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" .
-		    " xsi:schemaLocation=\"" .
-			"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd " .
-			"urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd\">";
+	global $basedir, $baseurl, $baseurlpatch;
+	$Result =   '<DIDL-Lite' .
+		    ' xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"' .
+		    ' xmlns:sec="http://www.sec.co.kr/dlna"' .
+		    ' xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/"' .
+		    ' xmlns:dc="http://purl.org/dc/elements/1.1/"' .
+		    ' xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"' .
+		    ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' .
+		    ' xsi:schemaLocation="' .
+			'urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd ' .
+			'urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd">';
 	$ParentID = '-1';
 	$NumberReturned = 0;
 	$TotalMatches = 0;
@@ -374,7 +390,6 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 			$Restricted = '1';
 		}
 		$basefilename = basename($dir);
-		$date = date('c', filectime($filename));
 		if ('0' === $ObjectID) {
 			$title = 'root';
 			$ParentID = '-1';
@@ -391,20 +406,20 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 			$Result = $Result .
 			    "<container id=\"$ObjectID\" parentID=\"$ParentID\" childCount=\"$ChildCount\" restricted=\"$Restricted\" searchable=\"1\">" .
 				"<dc:title>$title</dc:title>" .
-				"<dc:date>$date</dc:date>" .
-				"<upnp:class>object.container.storageFolder</upnp:class>" .
+				'<upnp:class>object.container.storageFolder</upnp:class>' .
 				"<upnp:storageTotal>$StorageTotal</upnp:storageTotal>" .
 				"<upnp:storageFree>$StorageFree</upnp:storageFree>" .
 				"<upnp:storageUsed>$StorageUsed</upnp:storageUsed>" .
 				"<upnp:writeStatus>$WriteStatus</upnp:writeStatus>";
 			if ('0' === $ObjectID) {
 				$Result = $Result .
-					"<upnp:searchClass includeDerived=\"1\">object.item.audioItem</upnp:searchClass>" .
-					"<upnp:searchClass includeDerived=\"1\">object.item.imageItem</upnp:searchClass>" .
-					"<upnp:searchClass includeDerived=\"1\">object.item.videoItem</upnp:searchClass>";
+					'<upnp:searchClass includeDerived="1">object.item.audioItem</upnp:searchClass>' .
+					'<upnp:searchClass includeDerived="1">object.item.imageItem</upnp:searchClass>' .
+					'<upnp:searchClass includeDerived="1">object.item.videoItem</upnp:searchClass>';
 			}
-			$Result = $Result . "</container>";
+			$Result = $Result . '</container>';
 		} else { /* File. */
+			$date = upnp_date(filectime($filename), 1);
 			$iclass = upnp_get_class($basefilename, 'object.item.videoItem');
 			$size = filesize($filename);
 			$mimetype = upnp_mime_content_type($filename);
@@ -414,9 +429,9 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 				"<dc:date>$date</dc:date>" .
 				"<upnp:class>$iclass</upnp:class>" .
 				"<res size=\"$size\" protocolInfo=\"http-get:*:$mimetype:*\">$ObjectID</res>" .
-			    "</item>";
+			    '</item>';
 		}
-		$Result = $Result . "</DIDL-Lite>";
+		$Result = $Result . '</DIDL-Lite>';
 		return (array(	'Result' => $Result,
 				'NumberReturned' => 1,
 				'TotalMatches' => 1,
@@ -437,16 +452,16 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 		if (false === $fd) {
 			$Result = $Result .
 			    "<container id=\"111111111\" parentID=\"$ObjectID\" restricted=\"1\">" .
-				"<dc:title>Fail to open, return</dc:title>" .
-				"<upnp:class>object.container.storageFolder</upnp:class>" .
-			    "</container>";
-			$Result = $Result . "</DIDL-Lite>";
+				'<dc:title>Fail to open, return</dc:title>' .
+				'<upnp:class>object.container.storageFolder</upnp:class>' .
+			    '</container>';
+			$Result = $Result . '</DIDL-Lite>';
 			return (array(	'Result' => $Result,
 					'NumberReturned' => 1,
 					'TotalMatches' => 1,
 					'UpdateID' => $UpdateID));
 		}
-		$date = date("c", filectime($filename));
+		$date = upnp_date(filectime($filename), 1);
 		if (is_writable($filename)) {
 			$Restricted = '0';
 		} else {
@@ -493,9 +508,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 				$Result = $Result .
 				    "<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">" .
 					"<dc:title>$title</dc:title>" .
-					"<dc:date>$date</dc:date>" .
-					"<upnp:class>object.container.storageFolder</upnp:class>" .
-				    "</container>";
+					'<upnp:class>object.container.storageFolder</upnp:class>' .
+				    '</container>';
 			} else {
 				//$logo = get_named_val("tvg-logo", $buffer);
 				//if (null === $logo) {
@@ -510,12 +524,12 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 					//"<upnp:icon>$icon_url</upnp:icon>" .
 					"<upnp:class>$iclass</upnp:class>" .
 					"<res protocolInfo=\"http-get:*:$mimetype:*\">$en_entry</res>" .
-				    "</item>";
+				    '</item>';
 			}
 		} 
 		fclose ($fd);
 
-		$Result = $Result . "</DIDL-Lite>";
+		$Result = $Result . '</DIDL-Lite>';
 		return (array(	'Result' => $Result,
 				'NumberReturned' => $NumberReturned,
 				'TotalMatches' => $TotalMatches,
@@ -540,7 +554,6 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 			continue; /* Do not add more than requested. */
 		$NumberReturned ++;
 		/* Add item to result. */
-		$date = date('c', filectime($filename));
 		if (is_writable($filename)) {
 			$Restricted = '0';
 		} else {
@@ -552,9 +565,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 		$Result = $Result .
 		    "<container id=\"$en_entry\" parentID=\"$ObjectID\" childCount=\"$ChildCount\" restricted=\"$Restricted\" searchable=\"1\">" .
 			"<dc:title>$title</dc:title>" .
-			"<dc:date>$date</dc:date>" .
-			"<upnp:class>object.container.storageFolder</upnp:class>" .
-		    "</container>";
+			'<upnp:class>object.container.storageFolder</upnp:class>' .
+		    '</container>';
 	}
 	/* Add files to play list. */
 	foreach ($entries as $entry) {
@@ -574,7 +586,6 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 			continue; /* Do not add more than requested. */
 		$NumberReturned ++;
 		/* Add item to result. */
-		$date = date('c', filectime($filename));
 		if (is_writable($filename)) {
 			$Restricted = '0';
 		} else {
@@ -586,13 +597,13 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 			$Result = $Result .
 			    "<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">" .
 				"<dc:title>$title</dc:title>" .
-				"<dc:date>$date</dc:date>" .
-				"<upnp:class>object.container.storageFolder</upnp:class>" .
-			    "</container>";
+				'<upnp:class>object.container.storageFolder</upnp:class>' .
+			    '</container>';
 		} else {
+			$date = upnp_date(filectime($filename), 1);
 			$size = filesize($filename);
 			$mimetype = upnp_mime_content_type($filename);
-			$resolution = '';
+			$res_info_ex = '';
 			$Result = $Result .
 			    "<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">" .
 				"<dc:title>$title</dc:title>" .
@@ -604,16 +615,16 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 				    "<upnp:icon>$baseurlpatch$en_entry</upnp:icon>";
 				$img_info = getimagesize($filename);
 				if (false !== $img_info) {
-					$resolution = 'resolution="' . $img_info[0] . 'x' . $img_info[1] . '"';
+					$res_info_ex = ' resolution="' . $img_info[0] . 'x' . $img_info[1] . '"';
 				}
 			}
 			$Result = $Result .
-				"<res size=\"$size\" $resolution protocolInfo=\"http-get:*:$mimetype:*\">$baseurlpatch$en_entry</res>" .
-			    "</item>";
+				"<res size=\"$size\"$res_info_ex protocolInfo=\"http-get:*:$mimetype:*\">$baseurlpatch$en_entry</res>" .
+			    '</item>';
 		}
 	}
 
-	$Result = $Result . "</DIDL-Lite>";
+	$Result = $Result . '</DIDL-Lite>';
 	return (array(	'Result' => $Result,
 			'NumberReturned' => $NumberReturned,
 			'TotalMatches' => $TotalMatches,
@@ -623,20 +634,22 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 
 function Search($ContainerID, $SearchCriteria, $Filter, $StartingIndex,
     $RequestedCount, $SortCriteria) {
-	global $basedir, $baseurl, $file_class, $baseurlpatch;
-	$Result =   "<DIDL-Lite" .
-		    " xmlns:dc=\"http://purl.org/dc/elements/1.1/\"" .
-		    " xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\"" .
-		    " xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\"" .
-		    " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" .
-		    " xsi:schemaLocation=\"" .
-			"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd " .
-			"urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd\">";
+	global $basedir, $baseurl, $baseurlpatch;
+	$Result =   '<DIDL-Lite' .
+		    ' xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"' .
+		    ' xmlns:sec="http://www.sec.co.kr/dlna"' .
+		    ' xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/"' .
+		    ' xmlns:dc="http://purl.org/dc/elements/1.1/"' .
+		    ' xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"' .
+		    ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' .
+		    ' xsi:schemaLocation="' .
+			'urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd ' .
+			'urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd">';
 	$NumberReturned = 0;
 	$TotalMatches = 0;
 	$UpdateID = 1;
 
-	$Result = $Result . "</DIDL-Lite>";
+	$Result = $Result . '</DIDL-Lite>';
 
 	return (array(	'Result' => $Result,
 			'NumberReturned' => $NumberReturned,
@@ -669,18 +682,18 @@ function MoveObject($ObjectID, $NewParentID, $NewObjectID) {
 /* Samsung private. */
 function X_GetFeatureList() {
 	$FeatureList = 
-		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" .
-		"<Features" .
-		" xmlns=\"urn:schemas-upnp-org:av:avs\"" .
-		" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" .
-		" xsi:schemaLocation=\"urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd\">" .
-			"<Feature name=\"samsung.com_BASICVIEW\" version=\"1\">" .
-			    "<container id=\"A\" type=\"object.item.audioItem\"/>" .
-			    "<container id=\"I\" type=\"object.item.imageItem\"/>" .
-			    "<container id=\"V\" type=\"object.item.videoItem\"/>" .
-			    "<container id=\"P\" type=\"object.item.playlistItem\"/>" .
-			"</Feature>" .
-		"</Features>";
+		'<?xml version="1.0" encoding="UTF-8"?>' .
+		'<Features' .
+		' xmlns="urn:schemas-upnp-org:av:avs"' .
+		' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' .
+		' xsi:schemaLocation="urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd">' .
+			'<Feature name="samsung.com_BASICVIEW" version="1">' .
+			    '<container id="A" type="object.item.audioItem"/>' .
+			    '<container id="I" type="object.item.imageItem"/>' .
+			    '<container id="V" type="object.item.videoItem"/>' .
+			    '<container id="P" type="object.item.playlistItem"/>' .
+			'</Feature>' .
+		'</Features>';
 
 	return ($FeatureList);
 }
