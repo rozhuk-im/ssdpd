@@ -15,7 +15,7 @@
 		<modelURL>http://netlab.dhis.org/wiki/en:software:ssdpd:index</modelURL>
 		<serialNumber>1</serialNumber>
 		<UDN>uuid:99c11c71-ba2a-56ee-6fd1-830ff56f149f</UDN>
-		<UPC></UPC>
+		<UPC>000000000001</UPC>
 		<dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMS-1.50</dlna:X_DLNADOC>
 		<sec:ProductCap>smi,DCM10,getMediaInfo.sec,getCaptionInfo.sec</sec:ProductCap>
 		<sec:X_ProductCap>smi,DCM10,getMediaInfo.sec,getCaptionInfo.sec</sec:X_ProductCap>
