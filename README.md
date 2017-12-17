@@ -85,8 +85,10 @@ service php-fpm restart
 #### nginx
 If nginx will serve only upnp then you can:
 ```
-ln -f -s %%ETCDIR%%/nginx-upnp-full.conf /usr/local/etc/nginx/nginx.conf
+ln -f -s %%ETCDIR%%/nginx-upnp-full.conf %%CMAKE_INSTALL_PREFIX%%/etc/nginx/nginx.conf
 ```
+If nginx build with DSO (dynamic modules load) then you need
+uncomment "load_module" and set correth path to module.
 
 Or add to existing nginx.conf following line:
 include %%ETCDIR%%/nginx-upnp-handler.conf;
