@@ -264,7 +264,8 @@ function upnp_date($timedate, $format) {
 /* ContentDirectory funcs */
 
 function GetSearchCapabilities() {
-	$SearchCaps = 'upnp:class'; /* dc:title,upnp:class,upnp:artist */
+	// 'upnp:class'; /* dc:title,upnp:class,upnp:artist */
+	$SearchCaps = 'dc:creator,dc:date,dc:title,upnp:album,upnp:actor,upnp:artist,upnp:class,upnp:genre,@id,@parentID,@refID';
 
 	return ($SearchCaps);
 }
@@ -332,9 +333,11 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 	if (isset($ObjectID)) {
 		if (  1 === strlen($ObjectID) && (
 		    '0' === substr($ObjectID, 0, 1) ||
-		    'V' === substr($ObjectID, 0, 1) ||
+		    'A' === substr($ObjectID, 0, 1) ||
 		    'I' === substr($ObjectID, 0, 1) ||
-		    'A' === substr($ObjectID, 0, 1))) { /* V, I, A - from X_GetFeatureList() */
+		    'V' === substr($ObjectID, 0, 1) ||
+		    'P' === substr($ObjectID, 0, 1) ||
+		    'T' === substr($ObjectID, 0, 1))) { /* V, I, A, P, T - from X_GetFeatureList() */
 			$ObjectID = '0';
 			$dir = '';
 		} else {
@@ -692,6 +695,7 @@ function X_GetFeatureList() {
 			    '<container id="I" type="object.item.imageItem"/>' .
 			    '<container id="V" type="object.item.videoItem"/>' .
 			    '<container id="P" type="object.item.playlistItem"/>' .
+			    '<container id="T" type="object.item.textItem"/>' .
 			'</Feature>' .
 		'</Features>';
 
