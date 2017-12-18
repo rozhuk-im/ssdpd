@@ -27,7 +27,7 @@ SET(PACKAGE_TARNAME		"${PACKAGE_NAME}-${PACKAGE_VERSION}")
 OPTION(ENABLE_OPTIMIZATION	"Enable extra optimizations [default: OFF]"		OFF)
 OPTION(ENABLE_COVERAGE		"Build with code coverage options [default: OFF]"	OFF)
 OPTION(ENABLE_FULL_DEBUG	"Build with all possible debug [default: OFF]"		OFF)
-OPTION(INSTALL_PHP_UPNP_SERVER	"Install PHP UPnP/DLNA server [default: ON]"		OFF)
+OPTION(INSTALL_PHP_MEDIA_SERVER	"Install PHP UPnP/DLNA Media server [default: ON]"	OFF)
 
 # Now CMAKE_INSTALL_PREFIX is a base prefix for everything.
 IF(NOT CONFDIR)
@@ -307,8 +307,8 @@ IF(CMAKE_SYSTEM_NAME MATCHES "^.*BSD$|DragonFly")
 	INSTALL_SCRIPT(freebsd/ssdpd "${CMAKE_INSTALL_PREFIX}/etc/rc.d/")
 ENDIF()
 
-# Install PHP UPnP/DLNA server
-IF(INSTALL_PHP_UPNP_SERVER)
+# Install PHP UPnP/DLNA Media server
+IF(INSTALL_PHP_MEDIA_SERVER)
 	INSTALL(DIRECTORY "www/upnp" DESTINATION ${WWWDIR})
 	INSTALL(DIRECTORY DESTINATION "${WWWDIR}/upnpdata")
 	INSTALL_CONFIG("nginx/nginx-upnp-full.conf" ${CONFDIR})
