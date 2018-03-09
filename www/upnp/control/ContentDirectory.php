@@ -1,6 +1,6 @@
 <?php 
 /*-
- * Copyright (c) 2013 - 2017 Rozhuk Ivan <rozhuk.im@gmail.com>
+ * Copyright (c) 2013 - 2018 Rozhuk Ivan <rozhuk.im@gmail.com>
  * All rights reserved.
  * 
  * Subject to the following obligations and disclaimer of warranty, use and
@@ -113,7 +113,6 @@ $baseurlpatch = 'http://' . $_SERVER['HTTP_HOST'].$baseurl;
 if ('/' !== substr($baseurlpatch, -1, 1)) {
 	$baseurlpatch = $baseurlpatch . '/';
 }
-
 /**
  * Apply workaround for the libxml PHP bugs:
  * @link https://bugs.php.net/bug.php?id=62577
@@ -122,6 +121,13 @@ if ('/' !== substr($baseurlpatch, -1, 1)) {
 if (function_exists('libxml_disable_entity_loader')) {
 	libxml_disable_entity_loader(false);
 }
+
+# $server = new SoapServer(null, array('uri' => "urn:schemas-upnp-org:service:ContentDirectory:3"));
+$server = new SoapServer(dirname(__FILE__)."/../descr/ContentDirectory.wdsl",
+		array(	'cache_wsdl' => WSDL_CACHE_MEMORY,
+			'trace' => true
+		));
+
 
 function xml_encode($string) {
 
@@ -266,6 +272,7 @@ function upnp_date($timedate, $format) {
 function GetSearchCapabilities() {
 	// 'upnp:class'; /* dc:title,upnp:class,upnp:artist */
 	$SearchCaps = 'dc:creator,dc:date,dc:title,upnp:album,upnp:actor,upnp:artist,upnp:class,upnp:genre,@id,@parentID,@refID';
+	//$SearchCaps = 'dc:title';
 
 	return ($SearchCaps);
 }
@@ -331,7 +338,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 
 	/* Check input param. */
 	if (isset($ObjectID)) {
-		if (  1 === strlen($ObjectID) && (
+		if ((1 === strlen($ObjectID) ||
+		     (3 === strlen($ObjectID) && '_T' === substr($ObjectID, 1, 2))) && (
 		    '0' === substr($ObjectID, 0, 1) ||
 		    'A' === substr($ObjectID, 0, 1) ||
 		    'I' === substr($ObjectID, 0, 1) ||
@@ -378,11 +386,12 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 		$filename = $basedir.$dir;
 		/* Is file/dir exist? */
 		$stat = stat($filename);
-		if (false === $stat) /* No such file/dir. */
+		if (false === $stat) { /* No such file/dir. */
 			return (array(	'Result' => '',
 					'NumberReturned' => 0,
 					'TotalMatches' => 0,
 					'UpdateID' => $UpdateID));
+		}
 
 		/* Collect data. */
 		if (is_writable($filename)) {
@@ -453,15 +462,9 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 		$filename = $basedir.$dir;
 		$fd = fopen($filename, 'r');
 		if (false === $fd) {
-			$Result = $Result .
-			    "<container id=\"111111111\" parentID=\"$ObjectID\" restricted=\"1\">" .
-				'<dc:title>Fail to open, return</dc:title>' .
-				'<upnp:class>object.container.storageFolder</upnp:class>' .
-			    '</container>';
-			$Result = $Result . '</DIDL-Lite>';
-			return (array(	'Result' => $Result,
-					'NumberReturned' => 1,
-					'TotalMatches' => 1,
+			return (array(	'Result' => '',
+					'NumberReturned' => 0,
+					'TotalMatches' => 0,
 					'UpdateID' => $UpdateID));
 		}
 		$date = upnp_date(filectime($filename), 1);
@@ -702,26 +705,26 @@ function X_GetFeatureList() {
 	return ($FeatureList);
 }
 
-# $server = new SoapServer(null, array('uri' => "urn:schemas-upnp-org:service:ContentDirectory:3"));
-$server = new SoapServer(dirname(__FILE__)."/../descr/ContentDirectory.wdsl",
-		array(	'cache_wsdl' => WSDL_CACHE_MEMORY,
-			'trace' => true
-		));
+try {
+	$server->addFunction(array(	'GetSearchCapabilities',
+					'GetSortCapabilities',
+					'GetSortExtensionCapabilities',
+					'GetFeatureList',
+					'GetSystemUpdateID',
+					'GetServiceResetToken',
+					'Browse',
+					'Search',
+					'CreateObject',
+					'DestroyObject',
+					'UpdateObject',
+					'MoveObject',
+					'X_GetFeatureList'
+				)); 
+	$server->handle(); 
+} catch (Exception $e) {
+	$server->fault($e->getCode(), $e->getMessage());
+	throw $e;
+}
 
-$server->addFunction(array(	'GetSearchCapabilities',
-				'GetSortCapabilities',
-				'GetSortExtensionCapabilities',
-				'GetFeatureList',
-				'GetSystemUpdateID',
-				'GetServiceResetToken',
-				'Browse',
-				'Search',
-				'CreateObject',
-				'DestroyObject',
-				'UpdateObject',
-				'MoveObject',
-				'X_GetFeatureList'
-			)); 
-$server->handle(); 
 
 ?>
