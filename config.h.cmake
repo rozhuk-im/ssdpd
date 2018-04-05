@@ -7,7 +7,6 @@
 
 /* Includes. */
 #cmakedefine HAVE_SYS_TYPES_H		1
-#cmakedefine HAVE_SYS_TIME_H		1
 
 /* API */
 #cmakedefine HAVE_MEMSET_S		1
@@ -20,8 +19,6 @@
 #cmakedefine HAVE_ACCEPT4		1
 
 /* Macros. */
-#cmakedefine HAVE_PATH_MAX		1
-#cmakedefine HAVE_MAXPATHLEN		1
 #cmakedefine HAVE_SOCK_NONBLOCK		1
 
 
