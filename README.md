@@ -25,7 +25,7 @@ cd ssdpd
 mkdir build
 cd build
 cmake ..
-make
+make -j
 ```
 
 
