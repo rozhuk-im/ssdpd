@@ -271,8 +271,8 @@ function upnp_date($timedate, $format) {
 
 function GetSearchCapabilities() {
 	// 'upnp:class'; /* dc:title,upnp:class,upnp:artist */
-	$SearchCaps = 'dc:creator,dc:date,dc:title,upnp:album,upnp:actor,upnp:artist,upnp:class,upnp:genre,@id,@parentID,@refID';
-	//$SearchCaps = 'dc:title';
+	//$SearchCaps = 'dc:creator,dc:date,dc:title,upnp:album,upnp:actor,upnp:artist,upnp:class,upnp:genre,@id,@parentID,@refID';
+	$SearchCaps = 'dc:title';
 
 	return ($SearchCaps);
 }
@@ -339,7 +339,9 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 	/* Check input param. */
 	if (isset($ObjectID)) {
 		if ((1 === strlen($ObjectID) ||
-		     (3 === strlen($ObjectID) && '_T' === substr($ObjectID, 1, 2))) && (
+		     (3 === strlen($ObjectID) && '_T' === substr($ObjectID, 1, 2)) ||
+		     (3 === strlen($ObjectID) && '_D' === substr($ObjectID, 1, 2)) ||
+		     (3 === strlen($ObjectID) && '_L' === substr($ObjectID, 1, 2))) && (
 		    '0' === substr($ObjectID, 0, 1) ||
 		    'A' === substr($ObjectID, 0, 1) ||
 		    'I' === substr($ObjectID, 0, 1) ||
