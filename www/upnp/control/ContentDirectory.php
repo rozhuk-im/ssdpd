@@ -705,6 +705,10 @@ function X_GetFeatureList() {
 	return ($FeatureList);
 }
 
+function X_SetBookmark($CategoryType, $RID, $ObjectID, $PosSecond) {
+}
+
+
 try {
 	$server->addFunction(array(	'GetSearchCapabilities',
 					'GetSortCapabilities',
@@ -718,7 +722,8 @@ try {
 					'DestroyObject',
 					'UpdateObject',
 					'MoveObject',
-					'X_GetFeatureList'
+					'X_GetFeatureList',
+					'X_SetBookmark'
 				)); 
 	$server->handle(); 
 } catch (Exception $e) {

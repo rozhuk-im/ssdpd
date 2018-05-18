@@ -320,6 +320,30 @@
 
 
 
+<message name="X_SetBookmarkIN">
+	<part name="CategoryType" type="xsd:unsignedInt"/>
+	<part name="RID" type="xsd:unsignedInt"/>
+	<part name="ObjectID" type="xsd:string"/>
+	<part name="PosSecond" type="xsd:unsignedInt"/>
+</message>
+
+<portType name="X_SetBookmarkIO">
+	<operation name="X_SetBookmark">
+		<input message="X_SetBookmarkIN"/>
+	</operation>
+</portType>
+
+<binding name="X_SetBookmarkBinding" type="X_SetBookmarkIO">
+	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+	<operation name="X_SetBookmark">
+		<soap:operation soapAction="urn:ContentDirectory#X_SetBookmark"/>
+		<input><soap:body use="literal"/></input>
+		<output><soap:body use="literal"/></output>
+	</operation>
+</binding>
+
+
+
 <service name="ContentDirectory">
 	<port name="GetSearchCapabilitiesPort" binding="GetSearchCapabilitiesBinding">
 		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
@@ -358,6 +382,9 @@
 		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
 	</port>
 	<port name="X_GetFeatureListPort" binding="X_GetFeatureListBinding">
+		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
+	</port>
+	<port name="X_SetBookmark" binding="X_SetBookmarkBinding">
 		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
 	</port>
 </service>
