@@ -323,7 +323,6 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 	global $basedir, $baseurl, $baseurlpatch;
 	$Result =   '<DIDL-Lite' .
 		    ' xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"' .
-		    ' xmlns:sec="http://www.sec.co.kr/dlna"' .
 		    ' xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/"' .
 		    ' xmlns:dc="http://purl.org/dc/elements/1.1/"' .
 		    ' xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"' .
@@ -645,7 +644,6 @@ function Search($ContainerID, $SearchCriteria, $Filter, $StartingIndex,
 	global $basedir, $baseurl, $baseurlpatch;
 	$Result =   '<DIDL-Lite' .
 		    ' xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"' .
-		    ' xmlns:sec="http://www.sec.co.kr/dlna"' .
 		    ' xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/"' .
 		    ' xmlns:dc="http://purl.org/dc/elements/1.1/"' .
 		    ' xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"' .
@@ -694,6 +692,7 @@ function X_GetFeatureList() {
 		'<Features' .
 		' xmlns="urn:schemas-upnp-org:av:avs"' .
 		' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' .
+		' xmlns:sec="http://www.sec.co.kr/dlna"' .
 		' xsi:schemaLocation="urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd">' .
 			'<Feature name="samsung.com_BASICVIEW" version="1">' .
 			    '<container id="A" type="object.item.audioItem"/>' .

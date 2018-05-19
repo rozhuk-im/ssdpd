@@ -1,11 +1,6 @@
 <?xml version="1.0"?>
 <root xmlns="urn:schemas-upnp-org:device-1-0"
       xmlns:dlna="urn:schemas-dlna-org:device-1-0"
-      xmlns:av="urn:schemas-sony-com:av"
-      xmlns:hdlnk="urn:schemas-hdlnk-org:device-1-0"
-      xmlns:jlabs="urn:schemas-jlabs-or-jp:device-1-0"
-      xmlns:sec="http://www.sec.co.kr/dlna"
-      xmlns:sptv="urn:schemas-skyperfectv-co-jp:device-1-0"
       configId="1">
 	<specVersion>
 		<major>1</major>
@@ -24,12 +19,6 @@
 		<UDN>uuid:99c11c71-ba2a-56ee-6fd1-830ff56f149f</UDN>
 		<UPC>000000000001</UPC>
 		<dlna:X_DLNADOC>DMS-1.50</dlna:X_DLNADOC>
-		<hdlnk:X_HDLNKDOC>REC-1.00</hdlnk:X_HDLNKDOC>
-		<jlabs:X_JLABSDOC>SERVER-1.0</jlabs:X_JLABSDOC>
-		<jlabs:X_JLABSCAP>serve-1.0,upload_rec_sink-1.0,margin_rec-1.0-60</jlabs:X_JLABSCAP>
-		<sec:ProductCap>smi,DCM10,getMediaInfo.sec,getCaptionInfo.sec</sec:ProductCap>
-		<sec:X_ProductCap>smi,DCM10,getMediaInfo.sec,getCaptionInfo.sec</sec:X_ProductCap>
-		<sptv:X_SPTVCAP>REC-1.00,X_SRS-1.00,NEXT_READY-60</sptv:X_SPTVCAP>
 		<iconList>
 			<icon>
 				<mimetype>image/png</mimetype>

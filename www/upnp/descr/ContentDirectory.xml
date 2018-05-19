@@ -396,7 +396,7 @@
 			</argumentList>
 		</action>
 		<action>
-			<name>X_GetFeatureList</name>
+			<name>X_GetFeatureList_DISABLED</name>
 			<argumentList>
 				<argument>
 					<name>FeatureList</name>

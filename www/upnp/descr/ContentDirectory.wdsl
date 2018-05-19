@@ -304,15 +304,15 @@
 </message>
 
 <portType name="X_GetFeatureListIO">
-	<operation name="X_GetFeatureList">
+	<operation name="X_GetFeatureList_DISABLED">
 		<output message="X_GetFeatureListOUT"/>
 	</operation>
 </portType>
 
 <binding name="X_GetFeatureListBinding" type="X_GetFeatureListIO">
 	<soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
-	<operation name="X_GetFeatureList">
-		<soap:operation soapAction="urn:ContentDirectory#X_GetFeatureList"/>
+	<operation name="X_GetFeatureList_DISABLED">
+		<soap:operation soapAction="urn:ContentDirectory#X_GetFeatureList_DISABLED"/>
 		<input><soap:body use="literal"/></input>
 		<output><soap:body use="literal"/></output>
 	</operation>
@@ -384,7 +384,7 @@
 	<port name="X_GetFeatureListPort" binding="X_GetFeatureListBinding">
 		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
 	</port>
-	<port name="X_SetBookmark" binding="X_SetBookmarkBinding">
+	<port name="X_SetBookmarkPort" binding="X_SetBookmarkBinding">
 		<soap:address location="http://localhost/upnp/control/ContentDirectory"/>
 	</port>
 </service>
