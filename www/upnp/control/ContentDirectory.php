@@ -105,6 +105,16 @@ $file_class = array (
 
 
 /* Auto variables. */
+
+/* "urn:schemas-upnp-org:service:ContentDirectory:1#Browse" */
+$http_hdr_soapact = $_SERVER['HTTP_SOAPACTION'];
+$soap_shemas = strpos($http_hdr_soapact, 'urn:schemas-upnp-org:service:ContentDirectory:');
+if (false === $soap_shemas)
+	return (500);
+$soap_service_ver = substr($http_hdr_soapact, ($soap_shemas + 46), 1);
+$soap_service_func = substr($http_hdr_soapact, ($soap_shemas + 48), -1);
+
+
 if (substr($basedir, -1, 1) !== '/') {
 	$basedir = $basedir . '/';
 }
@@ -125,6 +135,7 @@ if (function_exists('libxml_disable_entity_loader')) {
 # $server = new SoapServer(null, array('uri' => "urn:schemas-upnp-org:service:ContentDirectory:3"));
 $server = new SoapServer(dirname(__FILE__)."/../descr/ContentDirectory.wdsl",
 		array(	'cache_wsdl' => WSDL_CACHE_MEMORY,
+			'soap_version' => SOAP_1_2,
 			'trace' => true
 		));
 
@@ -417,7 +428,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 			$StorageUsed = ($StorageTotal - $StorageFree);
 			$ChildCount = (count(scandir($filename)) - 2);
 			$Result = $Result .
-			    "<container id=\"$ObjectID\" parentID=\"$ParentID\" childCount=\"$ChildCount\" restricted=\"$Restricted\" searchable=\"1\">" .
+			    "<container id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\" searchable=\"1\" childCount=\"$ChildCount\">" .
 				"<dc:title>$title</dc:title>" .
 				'<upnp:class>object.container.storageFolder</upnp:class>' .
 				"<upnp:storageTotal>$StorageTotal</upnp:storageTotal>" .
@@ -707,9 +718,17 @@ function X_GetFeatureList() {
 }
 
 function X_SetBookmark($CategoryType, $RID, $ObjectID, $PosSecond) {
+	/* Return:
+	 * <sec:dcmInfo>BM=number of seconds</sec:dcmInfo>
+	 * <upnp:lastPlaybackPosition>HH:MM:SS</upnp:lastPlaybackPosition>
+	 */
 }
 
 
+
+/* Process request. */
+
+$request_body = @file_get_contents('php://input');
 try {
 	$server->addFunction(array(	'GetSearchCapabilities',
 					'GetSortCapabilities',
@@ -725,12 +744,75 @@ try {
 					'MoveObject',
 					'X_GetFeatureList',
 					'X_SetBookmark'
-				)); 
-	$server->handle(); 
+				));
+	ob_start();
+	$server->handle($request_body); 
+	$soapXml = ob_get_clean();
 } catch (Exception $e) {
 	$server->fault($e->getCode(), $e->getMessage());
 	throw $e;
 }
 
+
+/* Post processing. */
+
+
+function get_resp_tag_name($sxml) {
+	$tag_st = strpos($sxml, '<SOAP-ENV:Body><SOAP-ENV:');
+	if (false === $tag_st)
+		return (false);
+	$tag_st += 25;
+	$tag_end = strpos($sxml, '>', $tag_st);
+	if (false === $tag_end)
+		return (false);
+	return (substr($sxml, $tag_st, ($tag_end - $tag_st)));
+}
+
+function get_tag_ns($req, $tag) {
+	$rreq = strrev($req);
+	$ns_st = strpos($rreq, strrev(":$tag>"));
+	if (false === $ns_st)
+		return (false);
+	$ns_st += (strlen($tag) + 2);
+	$ns_end = strpos($rreq, '/<', $ns_st);
+	if (false === $ns_end)
+		return (false);
+	return (strrev(substr($rreq, $ns_st, ($ns_end - $ns_st))));
+}
+
+function tag_ns_replace($req, $sxml, $tag, $ns=false) {
+	if (false === $tag)
+		return ($sxml);
+	if (false === $ns)
+		$ns = get_tag_ns($req, $tag);
+	if (false === $ns)
+		return ($sxml);
+	while ($tag_st = strpos($sxml, "<SOAP-ENV:$tag")) {
+		$tag_end = strpos($sxml, '>', $tag_st);
+		if (false === $tag_end)
+			return ($sxml);
+		$old_tag_data = substr($sxml, $tag_st, ($tag_end - $tag_st));
+		$new_tag_data = str_replace('SOAP-ENV', $ns, $old_tag_data);
+		$sxml = str_replace($old_tag_data, $new_tag_data, $sxml);
+	}
+	return (str_replace("</SOAP-ENV:$tag>", "</$ns:$tag>", $sxml));
+}
+
+
+/* Add encodingStyle attr. */
+$soapXml = str_replace('<SOAP-ENV:Envelope', '<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"', $soapXml);
+
+/* Add xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1" */
+$soap_act_resp_tag = get_resp_tag_name($soapXml);
+$soapXml = str_replace("<SOAP-ENV:$soap_act_resp_tag", "<SOAP-ENV:$soap_act_resp_tag xmlns:SOAP-ENV=\"urn:schemas-upnp-org:service:ContentDirectory:$soap_service_ver\"", $soapXml);
+
+/* Restore name spaces from request. */
+$soapXml = tag_ns_replace($request_body, $soapXml, 'Envelope');
+$soapXml = tag_ns_replace($request_body, $soapXml, 'Body');
+$soapXml = tag_ns_replace($request_body, $soapXml, $soap_act_resp_tag, get_tag_ns($request_body, $soap_service_func));
+
+$length = strlen($soapXml);
+header("Content-Length: " . $length);
+echo $soapXml;
 
 ?>
