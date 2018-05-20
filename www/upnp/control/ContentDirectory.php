@@ -119,7 +119,7 @@ if (substr($basedir, -1, 1) !== '/') {
 	$basedir = $basedir . '/';
 }
 $baseurl = implode('/', array_map('rawurlencode', explode('/', $baseurl)));
-$baseurlpatch = 'http://' . $_SERVER['HTTP_HOST'].$baseurl;
+$baseurlpatch = 'http://' . $_SERVER['HTTP_HOST'] . $baseurl;
 if ('/' !== substr($baseurlpatch, -1, 1)) {
 	$baseurlpatch = $baseurlpatch . '/';
 }
@@ -519,7 +519,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 			$NumberReturned ++;
 			/* Add item to result. */
 			$title = xml_encode(trim(substr($buffer, (strpos($buffer, ',') + 1))));
-			$en_entry = upnp_url_encode($entry);
+			//$en_entry = upnp_url_encode($entry);
+			$en_entry = xml_encode($entry);
 			$iclass = upnp_get_class($entry, 'object.item.videoItem.videoBroadcast');
 			$mimetype = 'video/mpeg';
 			if ('object.container.storageFolder' === $iclass) { /* Play list as folder! */
@@ -812,7 +813,7 @@ $soapXml = tag_ns_replace($request_body, $soapXml, 'Body');
 $soapXml = tag_ns_replace($request_body, $soapXml, $soap_act_resp_tag, get_tag_ns($request_body, $soap_service_func));
 
 $length = strlen($soapXml);
-header("Content-Length: " . $length);
+header('Content-Length: ' . $length);
 echo $soapXml;
 
 ?>
