@@ -52,7 +52,7 @@ LIST(APPEND CMAKE_REQUIRED_LIBRARIES ${PTHREAD_LIBRARY})
 ############################# MACRO SECTION ############################
 MACRO(TRY_C_FLAG PROP FLAG)
 	# Try flag once on the C compiler
-	CHECK_C_COMPILER_FLAG(${FLAG} C_FLAG_${PROP})
+	CHECK_C_COMPILER_FLAG("-Werror ${FLAG}" C_FLAG_${PROP})
 	IF(C_FLAG_${PROP})
 		SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG}")
 	ENDIF()
@@ -147,6 +147,8 @@ IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 ENDIF()
 
 
+TRY_C_FLAG(PIPE "-pipe")
+
 # Process with warn flags.
 IF(NOT CMAKE_C_OPT_FLAGS AND ENABLE_FULL_DEBUG)
 	TRY_C_FLAG(W "-W")
@@ -179,10 +181,15 @@ TRY_C_FLAG(FSTACK_PROTECTOR_ALL "-fstack-protector-all")
 TRY_C_FLAG(FSANITIZE_SAFE_STACK "-fsanitize=safe-stack")
 TRY_C_FLAG(FSANITIZE_CFI "-fsanitize=cfi")
 TRY_C_FLAG(MRETPOLINE "-mretpoline")
+TRY_C_FLAG(MFUNCTION_RETURN "-mfunction-return=thunk")
+TRY_C_FLAG(MINDIRECT_BRANCH "-mindirect-branch=thunk")
 TRY_C_FLAG(FWRAPV "-fwrapv")
 TRY_C_FLAG(FPIE "-fPIE")
 TRY_LINKER_FLAG(PIE "-pie")
+TRY_LINKER_FLAG(RETPOLINEPLT "-Wl,-z,retpolineplt")
+TRY_LINKER_FLAG(ZRELRO "-Wl,-z,relro")
 TRY_LINKER_FLAG(ZNOW "-Wl,-z,now")
+TRY_LINKER_FLAG(ZNOEXECSTACK "-Wl,-z,noexecstack")
 
 
 # Optimization flags
