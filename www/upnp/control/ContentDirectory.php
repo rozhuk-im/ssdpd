@@ -206,6 +206,27 @@ function get_named_val($name, $buf) { /* ...val_name="value"... */
 }
 
 
+function m3u_calc_items_count($filename) {
+
+	$items_count = 0;
+	$fd = fopen($filename, 'r');
+	if (false === $fd)
+		return ($items_count);
+	while (!feof($fd)) { /* Read the file line by line... */
+		$buffer = trim(fgets($fd));
+		if (false === strpos($buffer, '#EXTINF:')) /* Skip empty/bad lines. */
+			continue;
+		$entry = trim(fgets($fd));
+		if (false === strpos($entry, '://'))
+			continue;
+		$items_count ++;
+	} 
+	fclose ($fd);
+
+	return ($items_count);
+}
+
+
 function upnp_mime_content_type($filename) {
 
 	$def = 'video/mpeg';
@@ -442,18 +463,27 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 					'<upnp:searchClass includeDerived="1">object.item.videoItem</upnp:searchClass>';
 			}
 			$Result = $Result . '</container>';
-		} else { /* File. */
-			$date = upnp_date(filectime($filename), 1);
+		} else { /* File or playlist. */
 			$iclass = upnp_get_class($basefilename, 'object.item.videoItem');
-			$size = filesize($filename);
-			$mimetype = upnp_mime_content_type($filename);
-			$Result = $Result .
-			    "<item id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\">" .
-				"<dc:title>$title</dc:title>" .
-				"<dc:date>$date</dc:date>" .
-				"<upnp:class>$iclass</upnp:class>" .
-				"<res size=\"$size\" protocolInfo=\"http-get:*:$mimetype:*\">$ObjectID</res>" .
-			    '</item>';
+			if ('object.container.storageFolder' === $iclass) { /* Play list as folder! */
+				$ChildCount = m3u_calc_items_count($filename);
+				$Result = $Result .
+				    "<container id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\" searchable=\"1\" childCount=\"$ChildCount\">" .
+					"<dc:title>$title</dc:title>" .
+					'<upnp:class>object.container.storageFolder</upnp:class>' .
+				    '</container>';
+			} else {
+				$date = upnp_date(filectime($filename), 1);
+				$size = filesize($filename);
+				$mimetype = upnp_mime_content_type($filename);
+				$Result = $Result .
+				    "<item id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\">" .
+					"<dc:title>$title</dc:title>" .
+					"<dc:date>$date</dc:date>" .
+					"<upnp:class>$iclass</upnp:class>" .
+					"<res size=\"$size\" protocolInfo=\"http-get:*:$mimetype:*\">$ObjectID</res>" .
+				    '</item>';
+			}
 		}
 		$Result = $Result . '</DIDL-Lite>';
 		return (array(	'Result' => $Result,
@@ -582,7 +612,7 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 		$en_entry = upnp_url_encode($dir.$entry);
 		$ChildCount = (count(scandir($filename)) - 2);
 		$Result = $Result .
-		    "<container id=\"$en_entry\" parentID=\"$ObjectID\" childCount=\"$ChildCount\" restricted=\"$Restricted\" searchable=\"1\">" .
+		    "<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\" searchable=\"1\" childCount=\"$ChildCount\">" .
 			"<dc:title>$title</dc:title>" .
 			'<upnp:class>object.container.storageFolder</upnp:class>' .
 		    '</container>';
@@ -613,8 +643,9 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 		$title = xml_encode($entry);
 		$en_entry = upnp_url_encode($dir.$entry);
 		if ('object.container.storageFolder' === $iclass) { /* Play list as folder! */
+			$ChildCount = m3u_calc_items_count($filename);
 			$Result = $Result .
-			    "<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">" .
+			    "<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\" searchable=\"1\" childCount=\"$ChildCount\">" .
 				"<dc:title>$title</dc:title>" .
 				'<upnp:class>object.container.storageFolder</upnp:class>' .
 			    '</container>';
