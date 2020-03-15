@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2011 - 2017 Rozhuk Ivan <rozhuk.im@gmail.com>
+ * Copyright (c) 2011 - 2020 Rozhuk Ivan <rozhuk.im@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -108,17 +108,16 @@ main(int argc, char *argv[]) {
 	tp_settings_t tp_s;
 
 
+	g_log_fd = (uintptr_t)open("/dev/stderr", (O_WRONLY | O_APPEND));
 	error = read_file(cmd_line_data.cfg_file_name, 0, 0, 0, CFG_FILE_MAX_SIZE,
 	    &cfg_file_buf, &cfg_file_buf_size);
 	if (0 != error) {
-		g_log_fd = (uintptr_t)open("/dev/stdout", (O_WRONLY | O_APPEND));
 		LOG_ERR(error, "config read_file()");
 		goto err_out;
 	}
 	if (0 != xml_get_val_args(cfg_file_buf, cfg_file_buf_size,
 	    NULL, NULL, NULL, NULL, NULL,
 	    (const uint8_t*)"ssdpd", NULL)) {
-		g_log_fd = (uintptr_t)open("/dev/stdout", (O_WRONLY | O_APPEND));
 		LOG_INFO("Config file XML format invalid.");
 		goto err_out;
 	}
@@ -131,24 +130,17 @@ main(int argc, char *argv[]) {
 			memcpy(strbuf, data, data_size);
 			strbuf[data_size] = 0;
 			log_fd = open(strbuf, (O_WRONLY | O_APPEND | O_CREAT), 0644);
-			if (-1 != log_fd) {
-				g_log_fd = (uintptr_t)log_fd;
-			} else {
-				g_log_fd = (uintptr_t)open("/dev/stderr", (O_WRONLY | O_APPEND));
+			if (-1 == log_fd) {
 				LOG_ERR(errno, "Fail to open log file.");
-				close((int)g_log_fd);
-				g_log_fd = (uintptr_t)-1;
 			}
 		} else {
-			g_log_fd = (uintptr_t)open("/dev/stderr", (O_WRONLY | O_APPEND));
 			LOG_ERR(EINVAL, "Log file name too long.");
-			close((int)g_log_fd);
-			g_log_fd = (uintptr_t)-1;
 		}
 	} else if (0 != cmd_line_data.verbose) {
 		log_fd = open("/dev/stdout", (O_WRONLY | O_APPEND));
-		g_log_fd = (uintptr_t)log_fd;
 	}
+	close((int)g_log_fd);
+	g_log_fd = (uintptr_t)log_fd;
 	fd_set_nonblocking(g_log_fd, 1);
 	log_write("\n\n\n\n", 4);
 	LOG_INFO(PACKAGE_STRING": started");
@@ -430,7 +422,7 @@ err_out:
 	}
 	tp_destroy(tp);
 	LOG_INFO("exiting.");
-	close(log_fd);
+	close((int)g_log_fd);
 
 	return (error);
 }
