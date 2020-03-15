@@ -1,6 +1,6 @@
 <?php 
 /*-
- * Copyright (c) 2013 - 2018 Rozhuk Ivan <rozhuk.im@gmail.com>
+ * Copyright (c) 2013 - 2020 Rozhuk Ivan <rozhuk.im@gmail.com>
  * All rights reserved.
  * 
  * Subject to the following obligations and disclaimer of warranty, use and
@@ -95,9 +95,11 @@ $file_class = array (
 	'mov' => 'object.item.videoItem',
 	'mkv' => 'object.item.videoItem.videoBroadcast',
 	'mts' => 'object.item.videoItem',
+	'ogg' => 'object.item.videoItem',
 	'swf' => 'object.item.videoItem',
 	'vob' => 'object.item.videoItem',
 	'ts' => 'object.item.videoItem',
+	'webm' => 'object.item.videoItem',
 	'wm' => 'object.item.videoItem',
 	'wmv' => 'object.item.videoItem',
 	'wmx' => 'object.item.videoItem',
@@ -255,16 +257,25 @@ function upnp_mime_content_type($filename) {
 		'svgz' => 'image/svg+xml',
 
 		/* Audio. */
-		'flac' => 'audio/mpeg',
+		'flac' => 'audio/ogg',
 		'mp3' => 'audio/mpeg', 
-		'wav' => 'audio/mpeg',
-		'wma' => 'audio/mpeg',
+		'wav' => 'audio/vnd.wave',
+		'wma' => 'audio/x-ms-wma',
 
 		/* Video. */
+		'3gp' => 'video/3gpp',
+		'3gpp' => 'video/3gpp',
+		'3g2' => 'video/3gpp2',
+		'3gpp2' => 'video/3gpp2',
 		'flv' => 'video/x-flv',
 		'qt' => 'video/quicktime',
-		'mov' => 'video/quicktime',
+		'ogg' => 'video/ogg',
+		'mov' => 'video/mpeg',
+		'mp4' => 'video/mp4',
 		'mkv' => 'video/x-mkv',
+		'm2ts' => 'video/MP2T',
+		'ts' => 'video/MP2T',
+		'webm' => 'video/webm',
 	);
 	if (!isset($filename))
 		return ($def);
