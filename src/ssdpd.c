@@ -153,7 +153,7 @@ main(int argc, char *argv[]) {
 	LOG_INFO_FMT("descriptor table size: %d (max files)", getdtablesize());
 
 	/* Thread pool settings. */
-	tp_def_settings(&tp_s);
+	tp_settings_def(&tp_s);
 	tp_s.flags = 0;
 	tp_s.threads_max = 1;
 	error = tp_create(&tp_s, &tp);
