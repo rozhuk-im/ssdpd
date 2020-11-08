@@ -161,7 +161,7 @@ main(int argc, char *argv[]) {
 		LOG_ERR(error, "tp_create()");
 		goto err_out;
 	}
-	tp_threads_create(tp, 1);// XXX exit rewrite
+	tp_threads_create(tp, 1); /* XXX exit rewrite. */
 
 
 	/* SSDP receiver. */
@@ -172,10 +172,11 @@ main(int argc, char *argv[]) {
 	/* Default values. */
 	upnp_ssdp_def_settings(&ssdp_st);
 	/* Read from config. */
-	SSDPD_CFG_GET_VAL_UINT(NULL, &ssdp_st.skt_rcv_buf, "skt", "rcvBuf", NULL);
-	SSDPD_CFG_GET_VAL_UINT(NULL, &ssdp_st.skt_snd_buf, "skt", "sndBuf", NULL);
-	SSDPD_CFG_GET_VAL_UINT(NULL, &ssdp_st.ttl, "skt", "ttl", NULL);
-	SSDPD_CFG_GET_VAL_UINT(NULL, &ssdp_st.hop_limit, "skt", "hopLimit", NULL);
+	if (0 == SSDPD_CFG_GET_VAL_DATA(NULL, &data, &data_size,
+	    "skt", NULL)) {
+		skt_opts_xml_load(data, data_size,
+		    UPNP_SSDP_S_SKT_OPTS_LOAD_MASK, &ssdp_st.skt_opts);
+	}
 	ssdp_st.flags = 0;
 	if (0 == SSDPD_CFG_GET_VAL_DATA(NULL, &data, &data_size,
 	    "fEnableIPv4", NULL)) {
@@ -223,7 +224,7 @@ main(int argc, char *argv[]) {
 		if (0 != xml_get_val_args(cfg_dev_buf, cfg_dev_buf_size, NULL,
 		    NULL, NULL, &uuid, &tm,
 		    (const uint8_t*)"root", "device", "UDN", NULL) ||
-		    (5 + 36) != tm) { /* 5 = "uuid:" */
+		    (5 + 36) != tm) { /* 5 = "uuid:", 36 = UPNP_UUID_SIZE */
 			LOG_ERR(EINVAL, "Invalid device UUID");
 			free(cfg_dev_buf);
 			continue;
@@ -280,7 +281,7 @@ no_svc_type:
 				LOG_ERR(EINVAL, "No serviceType");
 				continue;
 			}
-			/* Parce: "urn:schemas-upnp-org:service:ContentDirectory:3". */
+			/* Parse: "urn:schemas-upnp-org:service:ContentDirectory:3". */
 			domain_name = (data + 4); /* Skip "urn:". */
 			ptm = mem_chr_off(5, data, data_size, ':');
 			if (NULL == ptm)

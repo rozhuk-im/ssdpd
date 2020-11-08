@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(ssdpd C)
 
 set(PACKAGE_VERSION_MAJOR	1)
-set(PACKAGE_VERSION_MINOR	07)
+set(PACKAGE_VERSION_MINOR	08)
 set(PACKAGE_VERSION_PATCH	0)
 
 set(PACKAGE_NAME		"${PROJECT_NAME}")
@@ -218,28 +218,13 @@ string(STRIP "${CMAKE_EXE_LINKER_FLAGS}" CMAKE_EXE_LINKER_FLAGS)
 string(STRIP "${CMAKE_MODULE_LINKER_FLAGS}" CMAKE_MODULE_LINKER_FLAGS)
 string(STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS)
 
-
-# Check platform specific includes.
-#check_include_files(sys/types.h		HAVE_SYS_TYPES_H)
-
-# Check platform API.
-check_function_exists(memset_s			HAVE_MEMSET_S)
-check_function_exists(explicit_bzero		HAVE_EXPLICIT_BZERO)
-check_function_exists(memrchr			HAVE_MEMRCHR)
-check_function_exists(memmem			HAVE_MEMMEM)
-check_function_exists(strncasecmp		HAVE_STRNCASECMP)
-check_function_exists(reallocarray		HAVE_REALLOCARRAY)
-check_function_exists(pipe2			HAVE_PIPE2)
-check_function_exists(accept4			HAVE_ACCEPT4)
-
-# Check macros.
-check_symbol_exists(SOCK_NONBLOCK sys/socket.h	HAVE_SOCK_NONBLOCK)
-
 configure_file(config.h.cmake src/config.h)
 add_definitions(-DHAVE_CONFIG_H)
 
 ################################ SUBDIRS SECTION #######################
 
+add_definitions(-DSOCKET_XML_CONFIG)
+include(src/liblcb/CMakeLists.txt)
 add_subdirectory(src)
 
 ############################ TARGETS SECTION ###########################

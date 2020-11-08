@@ -2,6 +2,7 @@
 set(SSDPD_BIN		ssdpd.c
 			liblcb/src/net/socket.c
 			liblcb/src/net/socket_address.c
+			liblcb/src/net/socket_options.c
 			liblcb/src/net/utils.c
 			liblcb/src/proto/http.c
 			liblcb/src/proto/upnp_ssdp.c
