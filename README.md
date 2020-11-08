@@ -1,6 +1,6 @@
 SSDPd
 ========
-Rozhuk Ivan <rozhuk.im@gmail.com> 2013 - 2017
+Rozhuk Ivan <rozhuk.im@gmail.com> 2013 - 2020
 
 SSDPd - Announces UPnP/DLNA device across network.
 You can use PHP script, nginx config and static files to
@@ -14,7 +14,7 @@ Website: http://www.netlab.linkpc.net/wiki/en:software:ssdpd:index
 
 ## Features
 * can act as UPnP/DLNA ContentDirectory to share multimedia content
-* can announce some remote UPnP/DLNA devices
+* can announce remote UPnP/DLNA devices
 
 
 ## Compilation and Installation
