@@ -91,7 +91,8 @@ main(int argc, char *argv[]) {
 	}
 
     { // process config file
-	const uint8_t *data, *ptm, *cur_pos, *cur_svc_pos, *cur_if_pos, *ann_data, *svc_data;
+	const uint8_t *data, *ptm, *cur_pos, *cur_svc_pos, *cur_if_pos;
+	const uint8_t *ann_data, *svc_data;
 	uint8_t *cfg_file_buf, *cfg_dev_buf;
 	size_t cfg_file_buf_size, cfg_dev_buf_size;
 	size_t tm, data_size, ann_data_size, svc_data_size;
@@ -109,8 +110,8 @@ main(int argc, char *argv[]) {
 
 
 	g_log_fd = (uintptr_t)open("/dev/stderr", (O_WRONLY | O_APPEND));
-	error = read_file(cmd_line_data.cfg_file_name, 0, 0, 0, CFG_FILE_MAX_SIZE,
-	    &cfg_file_buf, &cfg_file_buf_size);
+	error = read_file(cmd_line_data.cfg_file_name, 0, 0, 0,
+	    CFG_FILE_MAX_SIZE, &cfg_file_buf, &cfg_file_buf_size);
 	if (0 != error) {
 		LOG_ERR(error, "config read_file()");
 		goto err_out;
@@ -129,7 +130,8 @@ main(int argc, char *argv[]) {
 		if (sizeof(strbuf) > data_size) {
 			memcpy(strbuf, data, data_size);
 			strbuf[data_size] = 0;
-			log_fd = open(strbuf, (O_WRONLY | O_APPEND | O_CREAT), 0644);
+			log_fd = open(strbuf,
+			    (O_WRONLY | O_APPEND | O_CREAT), 0644);
 			if (-1 == log_fd) {
 				LOG_ERR(errno, "Fail to open log file.");
 			}
@@ -180,15 +182,18 @@ main(int argc, char *argv[]) {
 	ssdp_st.flags = 0;
 	if (0 == SSDPD_CFG_GET_VAL_DATA(NULL, &data, &data_size,
 	    "fEnableIPv4", NULL)) {
-		yn_set_flag32(data, data_size, UPNP_SSDP_S_F_IPV4, &ssdp_st.flags);
+		yn_set_flag32(data, data_size, UPNP_SSDP_S_F_IPV4,
+		    &ssdp_st.flags);
 	}
 	if (0 == SSDPD_CFG_GET_VAL_DATA(NULL, &data, &data_size,
 	    "fEnableIPv6", NULL)) {
-		yn_set_flag32(data, data_size, UPNP_SSDP_S_F_IPV6, &ssdp_st.flags);
+		yn_set_flag32(data, data_size, UPNP_SSDP_S_F_IPV6,
+		    &ssdp_st.flags);
 	}
 	if (0 == SSDPD_CFG_GET_VAL_DATA(NULL, &data, &data_size,
 	    "fEnableByebye", NULL)) {
-		yn_set_flag32(data, data_size, UPNP_SSDP_S_F_BYEBYE, &ssdp_st.flags);
+		yn_set_flag32(data, data_size, UPNP_SSDP_S_F_BYEBYE,
+		    &ssdp_st.flags);
 	}
 	if (0 == SSDPD_CFG_GET_VAL_DATA(NULL, &data, &data_size,
 	    "httpServer", NULL) &&
@@ -212,17 +217,18 @@ main(int argc, char *argv[]) {
 		    (const uint8_t*)"ifList", "if", NULL))
 			continue; /* No network interfaces specified. */
 		if (0 != xml_get_val_args(ann_data, ann_data_size, NULL,
-		    NULL, NULL, &data, &data_size, (const uint8_t*)"xmlDevDescr", NULL))
+		    NULL, NULL, &data, &data_size,
+		    (const uint8_t*)"xmlDevDescr", NULL))
 			continue; /* No xml file with UPnP dev description. */
-		error = read_file((const char*)data, data_size, 0, 0, CFG_FILE_MAX_SIZE,
-		    &cfg_dev_buf, &cfg_dev_buf_size);
+		error = read_file((const char*)data, data_size, 0, 0,
+		    CFG_FILE_MAX_SIZE, &cfg_dev_buf, &cfg_dev_buf_size);
 		if (0 != error) {
 			LOG_ERR(error, "xmlDevDescr read_file()");
 			continue;
 		}
 		/* Load device options and add. */
-		if (0 != xml_get_val_args(cfg_dev_buf, cfg_dev_buf_size, NULL,
-		    NULL, NULL, &uuid, &tm,
+		if (0 != xml_get_val_args(cfg_dev_buf, cfg_dev_buf_size,
+		    NULL, NULL, NULL, &uuid, &tm,
 		    (const uint8_t*)"root", "device", "UDN", NULL) ||
 		    (5 + 36) != tm) { /* 5 = "uuid:", 36 = UPNP_UUID_SIZE */
 			LOG_ERR(EINVAL, "Invalid device UUID");
@@ -230,8 +236,8 @@ main(int argc, char *argv[]) {
 			continue;
 		}
 		uuid += 5; /* Skip "uuid:". */
-		if (0 != xml_get_val_args(cfg_dev_buf, cfg_dev_buf_size, NULL,
-		    NULL, NULL, &data, &data_size,
+		if (0 != xml_get_val_args(cfg_dev_buf, cfg_dev_buf_size,
+		    NULL, NULL, NULL, &data, &data_size,
 		    (const uint8_t*)"root", "device", "deviceType", NULL)) {
 no_dev_type:
 			LOG_ERR(EINVAL, "No deviceType");
@@ -263,7 +269,8 @@ no_dev_type:
 		error = upnp_ssdp_dev_add(upnp_ssdp, (const char*)uuid,
 		    (const char*)domain_name, domain_name_size, 
 		    (const char*)type, type_size, ver,
-		    (uint32_t)time(NULL), config_id, max_age, ann_interval, &dev);
+		    (uint32_t)time(NULL), config_id, max_age,
+		    ann_interval, &dev);
 		if (0 != error) {
 			LOG_ERR(error, "upnp_ssdp_dev_add()");
 			free(cfg_dev_buf);
@@ -271,8 +278,8 @@ no_dev_type:
 		}
 		/* Load services options and add. */
 		cur_svc_pos = NULL;
-		while (0 == xml_get_val_args(cfg_dev_buf, cfg_dev_buf_size, &cur_svc_pos, 
-		    NULL, NULL, &svc_data, &svc_data_size,
+		while (0 == xml_get_val_args(cfg_dev_buf, cfg_dev_buf_size,
+		    &cur_svc_pos, NULL, NULL, &svc_data, &svc_data_size,
 		    (const uint8_t*)"root", "device", "serviceList", "service", NULL)) {
 			if (0 != xml_get_val_args(svc_data, svc_data_size, NULL,
 			    NULL, NULL, &data, &data_size,
@@ -312,11 +319,14 @@ no_svc_type:
 			url4_size = 0;
 			url6_size = 0;
 			xml_get_val_args(data, data_size, NULL, NULL, NULL,
-			    &url4, &url4_size, (const uint8_t*)"DevDescrURL4", NULL);
+			    &url4, &url4_size,
+			    (const uint8_t*)"DevDescrURL4", NULL);
 			xml_get_val_args(data, data_size, NULL, NULL, NULL,
-			    &url6, &url6_size, (const uint8_t*)"DevDescrURL6", NULL);
+			    &url6, &url6_size,
+			    (const uint8_t*)"DevDescrURL6", NULL);
 			if (0 != xml_get_val_args(data, data_size, NULL, NULL, NULL,
-			    &if_name, &if_name_size, (const uint8_t*)"ifName", NULL) ||
+			    &if_name, &if_name_size,
+			    (const uint8_t*)"ifName", NULL) ||
 			    (0 == url4_size && 0 == url6_size)) {
 				LOG_ERR(EINVAL, "Bad device network interface");
 				continue;
@@ -332,7 +342,8 @@ no_svc_type:
 					LOG_ERR(error, "get_if_addr_by_name()");
 					continue;
 				}
-				error = sa_addr_to_str(&addr, (char*)(url4_buf + 7),
+				error = sa_addr_to_str(&addr,
+				    (char*)(url4_buf + 7),
 				    (sizeof(url4_buf) - 8), &tm);
 				if (0 != error) {
 					LOG_ERR(error, "sa_addr_to_str()");
@@ -363,7 +374,8 @@ no_svc_type:
 					LOG_ERR(error, "get_if_addr_by_name()");
 					continue;
 				}
-				error = sa_addr_to_str(&addr, (char*)(url6_buf + 7),
+				error = sa_addr_to_str(&addr,
+				    (char*)(url6_buf + 7),
 				    (sizeof(url6_buf) - 8), &tm);
 				if (0 != error) {
 					LOG_ERR(error, "sa_addr_to_str()");
