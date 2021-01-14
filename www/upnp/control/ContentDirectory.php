@@ -384,10 +384,12 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 
 	/* Check input param. */
 	if (isset($ObjectID)) {
-		if ((1 === strlen($ObjectID) ||
-		     (3 === strlen($ObjectID) && '_T' === substr($ObjectID, 1, 2)) ||
-		     (3 === strlen($ObjectID) && '_D' === substr($ObjectID, 1, 2)) ||
-		     (3 === strlen($ObjectID) && '_L' === substr($ObjectID, 1, 2))) && (
+		$ObjectID_len = strlen($ObjectID);
+		if ((1 === $ObjectID_len || (
+		     3 === $ObjectID_len && (
+		      '_T' === substr($ObjectID, 1, 2) ||
+		      '_D' === substr($ObjectID, 1, 2) ||
+		      '_L' === substr($ObjectID, 1, 2)))) && (
 		    '0' === substr($ObjectID, 0, 1) ||
 		    'A' === substr($ObjectID, 0, 1) ||
 		    'I' === substr($ObjectID, 0, 1) ||
