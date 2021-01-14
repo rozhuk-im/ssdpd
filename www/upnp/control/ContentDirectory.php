@@ -1,6 +1,6 @@
 <?php 
 /*-
- * Copyright (c) 2013 - 2020 Rozhuk Ivan <rozhuk.im@gmail.com>
+ * Copyright (c) 2013 - 2021 Rozhuk Ivan <rozhuk.im@gmail.com>
  * All rights reserved.
  * 
  * Subject to the following obligations and disclaimer of warranty, use and
