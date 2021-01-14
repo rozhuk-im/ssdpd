@@ -404,14 +404,15 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 			/* Sec check: .. in path */
 			$dotdotdir = '';
 			$dirnames = explode('/', $dir);
-			for ($di = 0; $di < sizeof($dirnames); $di++) {
+			$dirnames_size = sizeof($dirnames);
+			for ($di = 0; $di < $dirnames_size; $di++) {
 				if ('.' === $dirnames[$di])
 					continue;
 				if ('..' === $dirnames[$di]) {
 					$dir = '';
 					break;
 				}
-				if ((sizeof($dirnames) - 1) > $di) {
+				if ($dirnames_size >= $di) {
 					$dotdotdir = $dotdotdir.$dirnames[$di].'/';
 				}
 			}
