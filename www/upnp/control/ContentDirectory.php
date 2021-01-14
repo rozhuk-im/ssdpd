@@ -105,6 +105,53 @@ $file_class = array(
 	'wmx' => 'object.item.videoItem',
 );
 
+/* MIME types. */
+$mime_types = array(
+	'txt' => 'text/plain',
+	'htm' => 'text/html',
+	'html' => 'text/html',
+	'php' => 'text/html',
+	'css' => 'text/css',
+	'js' => 'application/javascript',
+	'json' => 'application/json',
+	'xml' => 'application/xml',
+	'swf' => 'application/x-shockwave-flash',
+
+	/* Images. */
+	'png' => 'image/png',
+	'jpe' => 'image/jpeg',
+	'jpeg' => 'image/jpeg',
+	'jpg' => 'image/jpeg',
+	'gif' => 'image/gif',
+	'bmp' => 'image/bmp',
+	'ico' => 'image/vnd.microsoft.icon',
+	'tiff' => 'image/tiff',
+	'tif' => 'image/tiff',
+	'svg' => 'image/svg+xml',
+	'svgz' => 'image/svg+xml',
+
+	/* Audio. */
+	'flac' => 'audio/ogg',
+	'mp3' => 'audio/mpeg', 
+	'wav' => 'audio/vnd.wave',
+	'wma' => 'audio/x-ms-wma',
+
+	/* Video. */
+	'3gp' => 'video/3gpp',
+	'3gpp' => 'video/3gpp',
+	'3g2' => 'video/3gpp2',
+	'3gpp2' => 'video/3gpp2',
+	'flv' => 'video/x-flv',
+	'qt' => 'video/quicktime',
+	'ogg' => 'video/ogg',
+	'mov' => 'video/mpeg',
+	'mp4' => 'video/mp4',
+	'mkv' => 'video/x-mkv',
+	'm2ts' => 'video/MP2T',
+	'ts' => 'video/MP2T',
+	'webm' => 'video/webm',
+);
+
 
 /* Auto variables. */
 
@@ -230,53 +277,10 @@ function m3u_calc_items_count($filename) {
 
 
 function upnp_mime_content_type($filename) {
+	global $mime_types;
 
 	$def = 'video/mpeg';
-	$mime_types = array(
-		'txt' => 'text/plain',
-		'htm' => 'text/html',
-		'html' => 'text/html',
-		'php' => 'text/html',
-		'css' => 'text/css',
-		'js' => 'application/javascript',
-		'json' => 'application/json',
-		'xml' => 'application/xml',
-		'swf' => 'application/x-shockwave-flash',
 
-		/* Images. */
-		'png' => 'image/png',
-		'jpe' => 'image/jpeg',
-		'jpeg' => 'image/jpeg',
-		'jpg' => 'image/jpeg',
-		'gif' => 'image/gif',
-		'bmp' => 'image/bmp',
-		'ico' => 'image/vnd.microsoft.icon',
-		'tiff' => 'image/tiff',
-		'tif' => 'image/tiff',
-		'svg' => 'image/svg+xml',
-		'svgz' => 'image/svg+xml',
-
-		/* Audio. */
-		'flac' => 'audio/ogg',
-		'mp3' => 'audio/mpeg', 
-		'wav' => 'audio/vnd.wave',
-		'wma' => 'audio/x-ms-wma',
-
-		/* Video. */
-		'3gp' => 'video/3gpp',
-		'3gpp' => 'video/3gpp',
-		'3g2' => 'video/3gpp2',
-		'3gpp2' => 'video/3gpp2',
-		'flv' => 'video/x-flv',
-		'qt' => 'video/quicktime',
-		'ogg' => 'video/ogg',
-		'mov' => 'video/mpeg',
-		'mp4' => 'video/mp4',
-		'mkv' => 'video/x-mkv',
-		'm2ts' => 'video/MP2T',
-		'ts' => 'video/MP2T',
-		'webm' => 'video/webm',
-	);
 	if (!isset($filename))
 		return ($def);
 	$dot = strrpos($filename, '.');
