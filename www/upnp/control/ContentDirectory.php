@@ -777,6 +777,10 @@ function X_SetBookmark($CategoryType, $RID, $ObjectID, $PosSecond) {
 /* Process request. */
 
 $request_body = @file_get_contents('php://input');
+if (is_string($request_body) === false) {
+	header($_SERVER["SERVER_PROTOCOL"]." 400 Bad request");
+	die();	
+}
 try {
 	$server->addFunction(array('GetSearchCapabilities',
 					'GetSortCapabilities',
@@ -794,7 +798,8 @@ try {
 					'X_SetBookmark'
 				));
 	ob_start();
-	$server->handle($request_body); 
+	/* Type checking done before, it is safe to ignore type warning here. */
+	$server->handle(/** @scrutinizer ignore-type */ $request_body); 
 	$soapXml = ob_get_clean();
 } catch (Exception $e) {
 	$server->fault($e->getCode(), $e->getMessage());
