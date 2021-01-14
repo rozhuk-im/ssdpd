@@ -296,23 +296,9 @@ function m3u_browse($filename, $ObjectID, $StartingIndex, $RequestedCount,
 		$Restricted = '1';
 	}
 
-	//$logo_url_path = 'http://iptvremote.ru/channels/android/160/';
-	//$logo_url_path = 'http://172.16.0.254/download/tmp/image/';
 	while (!feof($fd)) { /* Read the file line by line... */
 		$buffer = trim(fgets($fd));
-		//if($buffer === false)
-		//	break;
 		if (false === strpos($buffer, '#EXTINF:')) { /* Skip empty/bad lines. */
-			/*if (false !== strpos($buffer, '#EXTM3U')) {
-				$logo_url_path = get_named_val('url-tvg-logo', $buffer);
-				if (null !== $logo_url_path) {
-					if ('/' !== substr($logo_url_path, -1, 1))
-						$logo_url_path = $logo_url_path . '/';
-				} else {
-					$logo_url_path = 'http://iptvremote.ru/channels/android/160/';
-					$logo_url_path = 'http://172.16.0.254/download/tmp/image/';
-				}
-			}*/
 			continue;
 		}
 		$entry = trim(fgets($fd));
@@ -340,17 +326,10 @@ function m3u_browse($filename, $ObjectID, $StartingIndex, $RequestedCount,
 				'<upnp:class>object.container.storageFolder</upnp:class>'.
 			    '</container>';
 		} else {
-			//$logo = get_named_val("tvg-logo", $buffer);
-			//if (null === $logo) {
-			//	$logo = trim(substr($buffer, (strpos($buffer, ',') + 1)));
-			//}
-			//$icon_url = upnp_url_encode($logo_url_path . mb_convert_case($logo, MB_CASE_LOWER, "UTF-8") . '.png');
 			$Result = $Result.
 			    "<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">".
 				"<dc:title>$title</dc:title>".
 				"<dc:date>$date</dc:date>".
-				//"<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>" .
-				//"<upnp:icon>$icon_url</upnp:icon>" .
 				"<upnp:class>$iclass</upnp:class>".
 				"<res protocolInfo=\"http-get:*:$mimetype:*\">$en_entry</res>".
 			    '</item>';
