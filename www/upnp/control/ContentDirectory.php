@@ -276,6 +276,96 @@ function m3u_calc_items_count($filename) {
 }
 
 
+function m3u_browse($filename, $ObjectID, $StartingIndex, $RequestedCount,
+    $UpdateID, $Result) {
+	$NumberReturned = 0;
+	$TotalMatches = 0;
+
+	/* Open the file. */
+	$fd = fopen($filename, 'r');
+	if (false === $fd) {
+		return (array('Result' => '',
+				'NumberReturned' => 0,
+				'TotalMatches' => 0,
+				'UpdateID' => $UpdateID));
+	}
+	$date = upnp_date(filectime($filename), 1);
+	if (is_writable($filename)) {
+		$Restricted = '0';
+	} else {
+		$Restricted = '1';
+	}
+
+	//$logo_url_path = 'http://iptvremote.ru/channels/android/160/';
+	//$logo_url_path = 'http://172.16.0.254/download/tmp/image/';
+	while (!feof($fd)) { /* Read the file line by line... */
+		$buffer = trim(fgets($fd));
+		//if($buffer === false)
+		//	break;
+		if (false === strpos($buffer, '#EXTINF:')) { /* Skip empty/bad lines. */
+			/*if (false !== strpos($buffer, '#EXTM3U')) {
+				$logo_url_path = get_named_val('url-tvg-logo', $buffer);
+				if (null !== $logo_url_path) {
+					if ('/' !== substr($logo_url_path, -1, 1))
+						$logo_url_path = $logo_url_path . '/';
+				} else {
+					$logo_url_path = 'http://iptvremote.ru/channels/android/160/';
+					$logo_url_path = 'http://172.16.0.254/download/tmp/image/';
+				}
+			}*/
+			continue;
+		}
+		$entry = trim(fgets($fd));
+		if (false === strpos($entry, '://'))
+			continue;
+		/* Ok, item matched and may be returned. */
+		$TotalMatches++;
+		if (0 < $StartingIndex &&
+		    $TotalMatches < $StartingIndex)
+			continue; /* Skip first items. */
+		if (0 < $RequestedCount &&
+		    $NumberReturned >= $RequestedCount)
+			continue; /* Do not add more than requested. */
+		$NumberReturned++;
+		/* Add item to result. */
+		$title = xml_encode(trim(substr($buffer, (strpos($buffer, ',') + 1))));
+		//$en_entry = upnp_url_encode($entry);
+		$en_entry = xml_encode($entry);
+		$iclass = upnp_get_class($entry, 'object.item.videoItem.videoBroadcast');
+		$mimetype = 'video/mpeg';
+		if ('object.container.storageFolder' === $iclass) { /* Play list as folder! */
+			$Result = $Result.
+			    "<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">".
+				"<dc:title>$title</dc:title>".
+				'<upnp:class>object.container.storageFolder</upnp:class>'.
+			    '</container>';
+		} else {
+			//$logo = get_named_val("tvg-logo", $buffer);
+			//if (null === $logo) {
+			//	$logo = trim(substr($buffer, (strpos($buffer, ',') + 1)));
+			//}
+			//$icon_url = upnp_url_encode($logo_url_path . mb_convert_case($logo, MB_CASE_LOWER, "UTF-8") . '.png');
+			$Result = $Result.
+			    "<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">".
+				"<dc:title>$title</dc:title>".
+				"<dc:date>$date</dc:date>".
+				//"<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>" .
+				//"<upnp:icon>$icon_url</upnp:icon>" .
+				"<upnp:class>$iclass</upnp:class>".
+				"<res protocolInfo=\"http-get:*:$mimetype:*\">$en_entry</res>".
+			    '</item>';
+		}
+	} 
+	fclose($fd);
+
+	$Result = $Result.'</DIDL-Lite>';
+	return (array('Result' => $Result,
+			'NumberReturned' => $NumberReturned,
+			'TotalMatches' => $TotalMatches,
+			'UpdateID' => $UpdateID));
+}
+
+
 function upnp_mime_content_type($filename) {
 	global $mime_types;
 
@@ -311,6 +401,84 @@ function upnp_date($timedate, $format) {
 	}
 
 	return ($res);
+}
+
+
+function browse_metadata($filename, $dir, $ObjectID, $UpdateID, $Result) {
+
+	/* Is file/dir exist? */
+	$stat = stat($filename);
+	if (false === $stat) { /* No such file/dir. */
+		return (array('Result' => '',
+				'NumberReturned' => 0,
+				'TotalMatches' => 0,
+				'UpdateID' => $UpdateID));
+	}
+
+	/* Collect data. */
+	if (is_writable($filename)) {
+		$WriteStatus = 'WRITABLE';
+		$Restricted = '0';
+	} else {
+		$WriteStatus = 'NOT_WRITABLE';
+		$Restricted = '1';
+	}
+	$basefilename = basename($dir);
+	if ('0' === $ObjectID) {
+		$title = 'root';
+		$ParentID = '-1';
+	} else {
+		$title = xml_encode($basefilename);
+		$ParentID = upnp_url_encode(dirname($dir));
+	}
+
+	if (is_dir($filename)) { /* Dir. */
+		$StorageTotal = disk_total_space($filename);
+		$StorageFree = disk_free_space($filename);
+		$StorageUsed = ($StorageTotal - $StorageFree);
+		$ChildCount = (count(scandir($filename)) - 2);
+		$Result = $Result.
+		    "<container id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\" searchable=\"1\" childCount=\"$ChildCount\">".
+			"<dc:title>$title</dc:title>".
+			'<upnp:class>object.container.storageFolder</upnp:class>'.
+			"<upnp:storageTotal>$StorageTotal</upnp:storageTotal>".
+			"<upnp:storageFree>$StorageFree</upnp:storageFree>".
+			"<upnp:storageUsed>$StorageUsed</upnp:storageUsed>".
+			"<upnp:writeStatus>$WriteStatus</upnp:writeStatus>";
+		if ('0' === $ObjectID) {
+			$Result = $Result.
+				'<upnp:searchClass includeDerived="1">object.item.audioItem</upnp:searchClass>'.
+				'<upnp:searchClass includeDerived="1">object.item.imageItem</upnp:searchClass>'.
+				'<upnp:searchClass includeDerived="1">object.item.videoItem</upnp:searchClass>';
+		}
+		$Result = $Result.'</container>';
+	} else { /* File or playlist. */
+		$iclass = upnp_get_class($basefilename, 'object.item.videoItem');
+		if ('object.container.storageFolder' === $iclass) { /* Play list as folder! */
+			$ChildCount = m3u_calc_items_count($filename);
+			$Result = $Result.
+			    "<container id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\" searchable=\"1\" childCount=\"$ChildCount\">".
+				"<dc:title>$title</dc:title>".
+				'<upnp:class>object.container.storageFolder</upnp:class>'.
+			    '</container>';
+		} else {
+			$date = upnp_date(filectime($filename), 1);
+			$size = filesize($filename);
+			$mimetype = upnp_mime_content_type($filename);
+			$Result = $Result.
+			    "<item id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\">".
+				"<dc:title>$title</dc:title>".
+				"<dc:date>$date</dc:date>".
+				"<upnp:class>$iclass</upnp:class>".
+				"<res size=\"$size\" protocolInfo=\"http-get:*:$mimetype:*\">$ObjectID</res>".
+			    '</item>';
+		}
+	}
+	$Result = $Result.'</DIDL-Lite>';
+	return (array('Result' => $Result,
+			'NumberReturned' => 1,
+			'TotalMatches' => 1,
+			'UpdateID' => $UpdateID));
 }
 
 
@@ -377,7 +545,6 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 		    ' xsi:schemaLocation="'.
 			'urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/ http://www.upnp.org/schemas/av/didl-lite.xsd '.
 			'urn:schemas-upnp-org:metadata-1-0/upnp/ http://www.upnp.org/schemas/av/upnp.xsd">';
-	$ParentID = '-1';
 	$NumberReturned = 0;
 	$TotalMatches = 0;
 	$UpdateID = 1;
@@ -434,80 +601,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 	}
 
 	if ('BrowseMetadata' === $BrowseFlag) {
-		$filename = $basedir.$dir;
-		/* Is file/dir exist? */
-		$stat = stat($filename);
-		if (false === $stat) { /* No such file/dir. */
-			return (array('Result' => '',
-					'NumberReturned' => 0,
-					'TotalMatches' => 0,
-					'UpdateID' => $UpdateID));
-		}
-
-		/* Collect data. */
-		if (is_writable($filename)) {
-			$WriteStatus = 'WRITABLE';
-			$Restricted = '0';
-		} else {
-			$WriteStatus = 'NOT_WRITABLE';
-			$Restricted = '1';
-		}
-		$basefilename = basename($dir);
-		if ('0' === $ObjectID) {
-			$title = 'root';
-			$ParentID = '-1';
-		} else {
-			$title = xml_encode($basefilename);
-			$ParentID = upnp_url_encode(dirname($dir));
-		}
-
-		if (is_dir($filename)) { /* Dir. */
-			$StorageTotal = disk_total_space($filename);
-			$StorageFree = disk_free_space($filename);
-			$StorageUsed = ($StorageTotal - $StorageFree);
-			$ChildCount = (count(scandir($filename)) - 2);
-			$Result = $Result.
-			    "<container id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\" searchable=\"1\" childCount=\"$ChildCount\">".
-				"<dc:title>$title</dc:title>".
-				'<upnp:class>object.container.storageFolder</upnp:class>'.
-				"<upnp:storageTotal>$StorageTotal</upnp:storageTotal>".
-				"<upnp:storageFree>$StorageFree</upnp:storageFree>".
-				"<upnp:storageUsed>$StorageUsed</upnp:storageUsed>".
-				"<upnp:writeStatus>$WriteStatus</upnp:writeStatus>";
-			if ('0' === $ObjectID) {
-				$Result = $Result.
-					'<upnp:searchClass includeDerived="1">object.item.audioItem</upnp:searchClass>'.
-					'<upnp:searchClass includeDerived="1">object.item.imageItem</upnp:searchClass>'.
-					'<upnp:searchClass includeDerived="1">object.item.videoItem</upnp:searchClass>';
-			}
-			$Result = $Result.'</container>';
-		} else { /* File or playlist. */
-			$iclass = upnp_get_class($basefilename, 'object.item.videoItem');
-			if ('object.container.storageFolder' === $iclass) { /* Play list as folder! */
-				$ChildCount = m3u_calc_items_count($filename);
-				$Result = $Result.
-				    "<container id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\" searchable=\"1\" childCount=\"$ChildCount\">".
-					"<dc:title>$title</dc:title>".
-					'<upnp:class>object.container.storageFolder</upnp:class>'.
-				    '</container>';
-			} else {
-				$date = upnp_date(filectime($filename), 1);
-				$size = filesize($filename);
-				$mimetype = upnp_mime_content_type($filename);
-				$Result = $Result.
-				    "<item id=\"$ObjectID\" parentID=\"$ParentID\" restricted=\"$Restricted\">".
-					"<dc:title>$title</dc:title>".
-					"<dc:date>$date</dc:date>".
-					"<upnp:class>$iclass</upnp:class>".
-					"<res size=\"$size\" protocolInfo=\"http-get:*:$mimetype:*\">$ObjectID</res>".
-				    '</item>';
-			}
-		}
-		$Result = $Result.'</DIDL-Lite>';
-		return (array('Result' => $Result,
-				'NumberReturned' => 1,
-				'TotalMatches' => 1,
-				'UpdateID' => $UpdateID));
+		return (browse_metadata($basedir.$dir, $dir, $ObjectID,
+		    $UpdateID, $Result));
 	}
 
 	if (!isset($StartingIndex)) {
@@ -518,89 +613,8 @@ function Browse($ObjectID, $BrowseFlag, $Filter, $StartingIndex,
 	}
 
 	if (!is_dir($basedir.$dir)) { /* Play list file? */
-		/* Open the file. */
-		$filename = $basedir.$dir;
-		$fd = fopen($filename, 'r');
-		if (false === $fd) {
-			return (array('Result' => '',
-					'NumberReturned' => 0,
-					'TotalMatches' => 0,
-					'UpdateID' => $UpdateID));
-		}
-		$date = upnp_date(filectime($filename), 1);
-		if (is_writable($filename)) {
-			$Restricted = '0';
-		} else {
-			$Restricted = '1';
-		}
-
-		//$logo_url_path = 'http://iptvremote.ru/channels/android/160/';
-		//$logo_url_path = 'http://172.16.0.254/download/tmp/image/';
-		while (!feof($fd)) { /* Read the file line by line... */
-			$buffer = trim(fgets($fd));
-			//if($buffer === false)
-			//	break;
-			if (false === strpos($buffer, '#EXTINF:')) { /* Skip empty/bad lines. */
-				/*if (false !== strpos($buffer, '#EXTM3U')) {
-					$logo_url_path = get_named_val('url-tvg-logo', $buffer);
-					if (null !== $logo_url_path) {
-						if ('/' !== substr($logo_url_path, -1, 1))
-							$logo_url_path = $logo_url_path . '/';
-					} else {
-						$logo_url_path = 'http://iptvremote.ru/channels/android/160/';
-						$logo_url_path = 'http://172.16.0.254/download/tmp/image/';
-					}
-				}*/
-				continue;
-			}
-			$entry = trim(fgets($fd));
-			if (false === strpos($entry, '://'))
-				continue;
-			/* Ok, item matched and may be returned. */
-			$TotalMatches++;
-			if (0 < $StartingIndex &&
-			    $TotalMatches < $StartingIndex)
-				continue; /* Skip first items. */
-			if (0 < $RequestedCount &&
-			    $NumberReturned >= $RequestedCount)
-				continue; /* Do not add more than requested. */
-			$NumberReturned++;
-			/* Add item to result. */
-			$title = xml_encode(trim(substr($buffer, (strpos($buffer, ',') + 1))));
-			//$en_entry = upnp_url_encode($entry);
-			$en_entry = xml_encode($entry);
-			$iclass = upnp_get_class($entry, 'object.item.videoItem.videoBroadcast');
-			$mimetype = 'video/mpeg';
-			if ('object.container.storageFolder' === $iclass) { /* Play list as folder! */
-				$Result = $Result.
-				    "<container id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">".
-					"<dc:title>$title</dc:title>".
-					'<upnp:class>object.container.storageFolder</upnp:class>'.
-				    '</container>';
-			} else {
-				//$logo = get_named_val("tvg-logo", $buffer);
-				//if (null === $logo) {
-				//	$logo = trim(substr($buffer, (strpos($buffer, ',') + 1)));
-				//}
-				//$icon_url = upnp_url_encode($logo_url_path . mb_convert_case($logo, MB_CASE_LOWER, "UTF-8") . '.png');
-				$Result = $Result.
-				    "<item id=\"$en_entry\" parentID=\"$ObjectID\" restricted=\"$Restricted\">".
-					"<dc:title>$title</dc:title>".
-					"<dc:date>$date</dc:date>".
-					//"<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0\">$icon_url</upnp:albumArtURI>" .
-					//"<upnp:icon>$icon_url</upnp:icon>" .
-					"<upnp:class>$iclass</upnp:class>".
-					"<res protocolInfo=\"http-get:*:$mimetype:*\">$en_entry</res>".
-				    '</item>';
-			}
-		} 
-		fclose($fd);
-
-		$Result = $Result.'</DIDL-Lite>';
-		return (array('Result' => $Result,
-				'NumberReturned' => $NumberReturned,
-				'TotalMatches' => $TotalMatches,
-				'UpdateID' => $UpdateID));
+		return (m3u_browse($basedir.$dir, $ObjectID,
+		    $StartingIndex, $RequestedCount, $UpdateID, $Result));
 	}
 
 	/* Scan directory and add to play list.*/
