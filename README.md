@@ -1,6 +1,12 @@
-SSDPd
-========
-Rozhuk Ivan <rozhuk.im@gmail.com> 2013 - 2020
+# SSDPd
+
+[![Build-macOS-latest Actions Status](https://github.com/rozhuk-im/ssdpd/workflows/build-macos-latest/badge.svg)](https://github.com/rozhuk-im/ssdpd/actions)
+[![Build-Ubuntu-latest Actions Status](https://github.com/rozhuk-im/ssdpd/workflows/build-ubuntu-latest/badge.svg)](https://github.com/rozhuk-im/ssdpd/actions)
+[![Build-PHP Status](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/badges/build.png?b=master)](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/build-status/master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/?branch=master)
+
+
+Rozhuk Ivan <rozhuk.im@gmail.com> 2013 - 2021
 
 SSDPd - Announces UPnP/DLNA device across network.
 You can use PHP script, nginx config and static files to
