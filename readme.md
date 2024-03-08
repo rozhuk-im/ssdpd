@@ -6,7 +6,7 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/?branch=master)
 
 
-Rozhuk Ivan <rozhuk.im@gmail.com> 2013 - 2021
+Rozhuk Ivan <rozhuk.im@gmail.com> 2013-2024
 
 SSDPd - Announces UPnP/DLNA device across network.
 You can use PHP script, nginx config and static files to
@@ -16,6 +16,13 @@ build your own UPnP/DLNA server.
 ## Licence
 BSD licence.
 Website: http://www.netlab.linkpc.net/wiki/en:software:ssdpd:index
+
+
+## Donate
+Support the author
+* **Buy Me A Coffee:** [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/rojuc) <br/>
+* **PayPal:** [![PayPal](https://srv-cdn.himpfen.io/badges/paypal/paypal-flat.svg)](https://paypal.me/rojuc) <br/>
+* **Bitcoin (BTC):** `1AxYyMWek5vhoWWRTWKQpWUqKxyfLarCuz` <br/>
 
 
 ## Features

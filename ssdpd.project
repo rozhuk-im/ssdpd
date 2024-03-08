@@ -106,9 +106,9 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="root">
+    <File Name="readme.md"/>
     <File Name="test.txt"/>
     <File Name="ssdpd.conf"/>
-    <File Name="README.md"/>
     <File Name="CMakeLists.txt"/>
     <File Name="dist.sh"/>
     <File Name="www/upnp/descr/root.xml"/>
@@ -139,10 +139,10 @@
       <ResourceCompiler Options=""/>
     </GlobalSettings>
     <Configuration Name="Debug" CompilerType="clang system" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-g -DDEBUG" C_Options="-Wwrite-strings;-Wsign-compare;-Wpointer-arith;-Wnested-externs;-Wmissing-prototypes;-Wmissing-declarations;-Winline;-Wmain;-Wformat-security;-Wformat;-Weverything;-Wchar-subscripts;-Wcast-align;-fcolor-diagnostics;-fsanitize=safe-stack;-ftrapv;-g -DDEBUG;-D_FORTIFY_SOURCE=2;-fstack-protector-all;-fPIE;-pedantic;-W;-Wall;-Wno-gnu-zero-variadic-macro-arguments;-Wno-variadic-macros;-Wno-padded;-Wno-packed;-Wno-unused-macros;-Wno-format-nonliteral;-Wno-reserved-id-macro;-Wno-date-time" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0"/>
+      <Compiler Options="-g -DDEBUG" C_Options="-ftrapv;-g -DDEBUG;-O0;-fwrapv;-fstack-protector-all;-Wall;-g3 -ggdb;-Wno-reserved-id-macro;-Wno-gnu-zero-variadic-macro-arguments;-Wno-variadic-macros;-Wno-documentation;-Wno-documentation-unknown-command;-Wno-padded;-Wno-cast-qual;-Wno-cast-function-type-strict;-Wno-reserved-identifier;-Wno-unsafe-buffer-usage" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0"/>
       <Linker Options="-fsanitize=safe-stack" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="$(ProjectPath)/build/src/" Command="$(OutputFile)" CommandArguments="-c /home/rim/docs/Progs/ssdpd/ssdpd.conf.debug" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/src/$(ProjectName)" IntermediateDirectory="$(ProjectPath)/$(ConfigurationName)" Command="$(OutputFile)" CommandArguments="-c /home/rim/docs/Progs/ssdpd/ssdpd.conf.debug" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
@@ -189,7 +189,7 @@ make</BuildCommand>
       <Compiler Options="-DNDEBUG -DRELEASE" C_Options="-DNDEBUG -DRELEASE" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0"/>
       <Linker Options="-O2" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="$(ProjectPath)/build/src/" Command="$(OutputFile)" CommandArguments="-v -c /home/rim/docs/Progs/ssdpd/ssdpd.conf" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/src/$(ProjectName)" IntermediateDirectory="$(ProjectPath)/$(ConfigurationName)" Command="$(OutputFile)" CommandArguments="-v -c /home/rim/docs/Progs/ssdpd/ssdpd.conf" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <BuildSystem Name="Default"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
         <![CDATA[]]>
@@ -202,17 +202,19 @@ make</BuildCommand>
       <PreBuild/>
       <PostBuild/>
       <CustomBuild Enabled="yes">
+        <Target Name="Configure">mkdir $(ProjectPath)/$(ConfigurationName) &amp;&amp;
+cd $(ProjectPath)/$(ConfigurationName) &amp;&amp;
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=true ..
+
+</Target>
         <RebuildCommand/>
-        <CleanCommand>rm -rf build</CleanCommand>
-        <BuildCommand>mkdir build &amp;&amp;
-cd build &amp;&amp;
-cmake -G Ninja -D CMAKE_VERBOSE_MAKEFILE=true .. &amp;&amp;
-cmake --build . -- -j`getconf NPROCESSORS_ONLN`</BuildCommand>
+        <CleanCommand>rm -rf $(ProjectPath)/$(ConfigurationName)</CleanCommand>
+        <BuildCommand>make -C $(ProjectPath)/$(ConfigurationName) -j`getconf NPROCESSORS_ONLN`</BuildCommand>
         <PreprocessFileCommand/>
         <SingleFileCommand/>
         <MakefileGenerationCommand/>
         <ThirdPartyToolName>None</ThirdPartyToolName>
-        <WorkingDirectory>$(ProjectPath)</WorkingDirectory>
+        <WorkingDirectory>$(WorkspacePath)</WorkingDirectory>
       </CustomBuild>
       <AdditionalRules>
         <CustomPostBuild/>
