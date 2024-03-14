@@ -50,7 +50,6 @@
           <File Name="src/liblcb/src/threadpool/threadpool_task.c"/>
         </VirtualDirectory>
         <VirtualDirectory Name="utils">
-          <File Name="src/liblcb/src/utils/log.c"/>
           <File Name="src/liblcb/src/utils/xml.c"/>
           <File Name="src/liblcb/src/utils/info.c"/>
           <File Name="src/liblcb/src/utils/cmd_line_daemon.c"/>
@@ -77,7 +76,6 @@
         <VirtualDirectory Name="utils">
           <File Name="src/liblcb/include/utils/mem_utils.h"/>
           <File Name="src/liblcb/include/utils/macro.h"/>
-          <File Name="src/liblcb/include/utils/log.h"/>
           <File Name="src/liblcb/include/utils/io_buf.h"/>
           <File Name="src/liblcb/include/utils/str2num.h"/>
           <File Name="src/liblcb/include/utils/strh2num.h"/>
@@ -106,6 +104,7 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="root">
+    <File Name="ssdpd.conf.debug"/>
     <File Name="readme.md"/>
     <File Name="test.txt"/>
     <File Name="ssdpd.conf"/>

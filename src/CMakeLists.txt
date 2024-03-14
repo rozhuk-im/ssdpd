@@ -13,7 +13,6 @@ set(SSDPD_BIN		ssdpd.c
 			liblcb/src/utils/sys.c
 			liblcb/src/utils/buf_str.c
 			liblcb/src/utils/info.c
-			liblcb/src/utils/log.c
 			liblcb/src/utils/xml.c)
 
 add_executable(ssdpd ${SSDPD_BIN})

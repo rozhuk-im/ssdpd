@@ -23,7 +23,7 @@
 
 	<announceList>
 		<announce> <!-- Announce device. -->
-			<xmlDevDescr>@WWWDIR@/upnp/descr/root.xml</xmlDevDescr>
+			<xmlDevDescr>/home/rim/docs/Progs/ssdpd/www/upnp/descr/root.xml</xmlDevDescr>
 			<maxAge>1800</maxAge>	<!-- seconds, announces life time in clients cache. -->
 			<interval>10</interval>	<!-- seconds, send announces to network. -->
 			<ifList> <!-- Network Ifaces list. -->

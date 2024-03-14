@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2011 - 2020 Rozhuk Ivan <rozhuk.im@gmail.com>
+ * Copyright (c) 2011-2024 Rozhuk Ivan <rozhuk.im@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@
 #include <unistd.h> /* close, write, sysconf */
 #include <fcntl.h> /* open, fcntl */
 #include <signal.h> /* SIGNAL constants. */
+#include <syslog.h>
 
 #include "utils/macro.h"
 #include "utils/mem_utils.h"
@@ -47,7 +48,6 @@
 #include "utils/xml.h"
 #include "utils/buf_str.h"
 #include "utils/sys.h"
-#include "utils/log.h"
 #include "utils/cmd_line_daemon.h"
 #include "net/socket_address.h"
 #include "net/utils.h"
@@ -76,7 +76,6 @@ main(int argc, char *argv[]) {
 	int error;
 	tp_p tp = NULL;
 	upnp_ssdp_p upnp_ssdp = NULL; /* UPnP SSDP server. */
-	int log_fd = -1;
 	cmd_line_data_t cmd_line_data;
 
 
@@ -88,9 +87,16 @@ main(int argc, char *argv[]) {
 	}
 	if (0 != cmd_line_data.daemon) {
 		make_daemon();
+		openlog(PACKAGE_NAME,
+		    (LOG_NDELAY | LOG_PID | ((0 != cmd_line_data.verbose) ? LOG_PERROR : 0)),
+		    LOG_DAEMON);
+	} else {
+		openlog(PACKAGE_NAME,
+		    (LOG_NDELAY | LOG_PID | LOG_PERROR), LOG_USER);
 	}
+	setlogmask(LOG_UPTO(cmd_line_data.log_level));
 
-    { // process config file
+    { /* Process config file. */
 	const uint8_t *data, *ptm, *cur_pos, *cur_svc_pos, *cur_if_pos;
 	const uint8_t *ann_data, *svc_data;
 	uint8_t *cfg_file_buf, *cfg_dev_buf;
@@ -104,55 +110,35 @@ main(int argc, char *argv[]) {
 	size_t if_name_size, url4_size, url6_size;
 	upnp_ssdp_settings_t ssdp_st;
 	uint8_t url4_buf[1024], url6_buf[1024];
-	char strbuf[1024];
 	struct sockaddr_storage addr;
 	tp_settings_t tp_s;
 
-
-	g_log_fd = (uintptr_t)open("/dev/stderr", (O_WRONLY | O_APPEND));
 	error = read_file(cmd_line_data.cfg_file_name, 0, 0, 0,
 	    CFG_FILE_MAX_SIZE, &cfg_file_buf, &cfg_file_buf_size);
 	if (0 != error) {
-		LOG_ERR(error, "config read_file()");
+		SYSLOG_ERR(LOG_CRIT, error, "Config read_file().");
 		goto err_out;
 	}
 	if (0 != xml_get_val_args(cfg_file_buf, cfg_file_buf_size,
 	    NULL, NULL, NULL, NULL, NULL,
 	    (const uint8_t*)"ssdpd", NULL)) {
-		LOG_INFO("Config file XML format invalid.");
+		syslog(LOG_CRIT, "Config file XML format invalid.");
 		goto err_out;
 	}
 
-	/* Log file */
-	if (0 == cmd_line_data.verbose &&
-	    0 == SSDPD_CFG_GET_VAL_DATA(NULL, &data, &data_size,
-	    "log", "file", NULL)) {
-		if (sizeof(strbuf) > data_size) {
-			memcpy(strbuf, data, data_size);
-			strbuf[data_size] = 0;
-			log_fd = open(strbuf,
-			    (O_WRONLY | O_APPEND | O_CREAT), 0644);
-			if (-1 == log_fd) {
-				LOG_ERR(errno, "Fail to open log file.");
-			}
-		} else {
-			LOG_ERR(EINVAL, "Log file name too long.");
-		}
-	} else if (0 != cmd_line_data.verbose) {
-		log_fd = open("/dev/stdout", (O_WRONLY | O_APPEND));
+	/* Log level. */
+	if (0 == SSDPD_CFG_GET_VAL_UINT(NULL, (uint32_t*)&cmd_line_data.log_level,
+	    "log", "level", NULL)) {
+		setlogmask(LOG_UPTO(cmd_line_data.log_level));
 	}
-	close((int)g_log_fd);
-	g_log_fd = (uintptr_t)log_fd;
-	fd_set_nonblocking(g_log_fd, 1);
-	log_write("\n\n\n\n", 4);
-	LOG_INFO(PACKAGE_STRING": started");
+	syslog(LOG_NOTICE, PACKAGE_STRING": started!");
 #ifdef DEBUG
-	LOG_INFO("Build: "__DATE__" "__TIME__", DEBUG");
+	syslog(LOG_INFO, "Build: "__DATE__" "__TIME__", DEBUG.");
 #else
-	LOG_INFO("Build: "__DATE__" "__TIME__", Release");
+	syslog(LOG_INFO, "Build: "__DATE__" "__TIME__", Release.");
 #endif
-	LOG_INFO_FMT("CPU count: %d", get_cpu_count());
-	LOG_INFO_FMT("descriptor table size: %d (max files)", getdtablesize());
+	syslog(LOG_INFO, "CPU count: %d.", get_cpu_count());
+	syslog(LOG_INFO, "Descriptor table size: %d (max files).", getdtablesize());
 
 	/* Thread pool settings. */
 	tp_settings_def(&tp_s);
@@ -160,7 +146,7 @@ main(int argc, char *argv[]) {
 	tp_s.threads_max = 1;
 	error = tp_create(&tp_s, &tp);
 	if (0 != error) {
-		LOG_ERR(error, "tp_create()");
+		SYSLOG_ERR(LOG_CRIT, error, "tp_create().");
 		goto err_out;
 	}
 	tp_threads_create(tp, 1); /* XXX exit rewrite. */
@@ -168,7 +154,7 @@ main(int argc, char *argv[]) {
 
 	/* SSDP receiver. */
 	if (0 == SSDPD_CFG_CALC_VAL_COUNT("announceList", "announce", NULL)) {
-		LOG_INFO("no announce devices specified, nothink to do...");
+		syslog(LOG_NOTICE, "No announce devices specified, nothink to do...");
 		goto err_out;
 	}
 	/* Default values. */
@@ -205,7 +191,7 @@ main(int argc, char *argv[]) {
 	/* Create SSDP receiver. */
 	error = upnp_ssdp_create(tp, &ssdp_st, &upnp_ssdp);
 	if (0 != error) {
-		LOG_ERR(error, "upnp_ssdp_create()");
+		SYSLOG_ERR(LOG_CRIT, error, "upnp_ssdp_create().");
 		return (error);
 	}
 
@@ -223,7 +209,7 @@ main(int argc, char *argv[]) {
 		error = read_file((const char*)data, data_size, 0, 0,
 		    CFG_FILE_MAX_SIZE, &cfg_dev_buf, &cfg_dev_buf_size);
 		if (0 != error) {
-			LOG_ERR(error, "xmlDevDescr read_file()");
+			SYSLOG_ERR(LOG_ERR, error, "xmlDevDescr read_file().");
 			continue;
 		}
 		/* Load device options and add. */
@@ -231,7 +217,7 @@ main(int argc, char *argv[]) {
 		    NULL, NULL, NULL, &uuid, &tm,
 		    (const uint8_t*)"root", "device", "UDN", NULL) ||
 		    (5 + 36) != tm) { /* 5 = "uuid:", 36 = UPNP_UUID_SIZE */
-			LOG_ERR(EINVAL, "Invalid device UUID");
+			syslog(LOG_ERR, "Invalid device UUID.");
 			free(cfg_dev_buf);
 			continue;
 		}
@@ -240,7 +226,7 @@ main(int argc, char *argv[]) {
 		    NULL, NULL, NULL, &data, &data_size,
 		    (const uint8_t*)"root", "device", "deviceType", NULL)) {
 no_dev_type:
-			LOG_ERR(EINVAL, "No deviceType");
+			syslog(LOG_ERR, "No deviceType.");
 			free(cfg_dev_buf);
 			continue;
 		}
@@ -272,7 +258,7 @@ no_dev_type:
 		    (uint32_t)time(NULL), config_id, max_age,
 		    ann_interval, &dev);
 		if (0 != error) {
-			LOG_ERR(error, "upnp_ssdp_dev_add()");
+			SYSLOG_ERR(LOG_ERR, error, "upnp_ssdp_dev_add().");
 			free(cfg_dev_buf);
 			continue;
 		}
@@ -285,7 +271,7 @@ no_dev_type:
 			    NULL, NULL, &data, &data_size,
 			    (const uint8_t*)"serviceType", NULL)) {
 no_svc_type:
-				LOG_ERR(EINVAL, "No serviceType");
+				syslog(LOG_ERR, "No serviceType.");
 				continue;
 			}
 			/* Parse: "urn:schemas-upnp-org:service:ContentDirectory:3". */
@@ -306,7 +292,7 @@ no_svc_type:
 			    (const char*)domain_name, domain_name_size, 
 			    (const char*)type, type_size, ver);
 			if (0 != error) {
-				LOG_ERR(error, "upnp_ssdp_svc_add()");
+				SYSLOG_ERR(LOG_ERR, error, "upnp_ssdp_svc_add().");
 				continue;
 			}
 		}
@@ -328,25 +314,25 @@ no_svc_type:
 			    &if_name, &if_name_size,
 			    (const uint8_t*)"ifName", NULL) ||
 			    (0 == url4_size && 0 == url6_size)) {
-				LOG_ERR(EINVAL, "Bad device network interface");
+				syslog(LOG_ERR, "Bad device network interface.");
 				continue;
 			}
 			/* Autoreplace NULL addr to if addr. */
 			if (14 < url4_size && /* http://0.0.0.0... */
 			    0 == mem_cmp_cstr("0.0.0.0", (url4 + 7)) &&
 			    (':' == url4[14] || '\\' == url4[14])) {
-				LOG_INFO("Autoreplace NULL IPv4 addr to if addr.");
+				syslog(LOG_INFO, "Autoreplace NULL IPv4 addr to if addr.");
 				error = get_if_addr_by_name((const char*)if_name,
 				    if_name_size, AF_INET, &addr);
 				if (0 != error) {
-					LOG_ERR(error, "get_if_addr_by_name()");
+					SYSLOG_ERR(LOG_ERR, error, "get_if_addr_by_name().");
 					continue;
 				}
 				error = sa_addr_to_str(&addr,
 				    (char*)(url4_buf + 7),
 				    (sizeof(url4_buf) - 8), &tm);
 				if (0 != error) {
-					LOG_ERR(error, "sa_addr_to_str()");
+					SYSLOG_ERR(LOG_ERR, error, "sa_addr_to_str().");
 					continue;
 				}
 				if (sizeof(url4_buf) > (url4_size + (tm - 7))) {
@@ -357,9 +343,9 @@ no_svc_type:
 					url4 = url4_buf;
 					url4_size += (tm - 7);
 					url4_buf[url4_size] = 0;
-					LOG_INFO((const char*)url4);
+					syslog(LOG_INFO, "%s", (const char*)url4);
 				} else {
-					LOG_EV("URL to long, not enough buf space.");
+					syslog(LOG_ERR, "URL to long, not enough buf space.");
 					url4 = NULL;
 					url4_size = 0;						
 				}
@@ -367,18 +353,18 @@ no_svc_type:
 			if (13 < url6_size && /* http://[::]... */
 			    0 == mem_cmp_cstr("[::]", (url6 + 7)) &&
 			    (':' == url6[11] || '\\' == url6[11])) {
-				LOG_INFO("Autoreplace NULL IPv6 addr to if addr.");
+				syslog(LOG_INFO, "Autoreplace NULL IPv6 addr to if addr.");
 				error = get_if_addr_by_name((const char*)if_name,
 				    if_name_size, AF_INET6, &addr);
 				if (0 != error) {
-					LOG_ERR(error, "get_if_addr_by_name()");
+					SYSLOG_ERR(LOG_ERR, error, "get_if_addr_by_name().");
 					continue;
 				}
 				error = sa_addr_to_str(&addr,
 				    (char*)(url6_buf + 7),
 				    (sizeof(url6_buf) - 8), &tm);
 				if (0 != error) {
-					LOG_ERR(error, "sa_addr_to_str()");
+					SYSLOG_ERR(LOG_ERR, error, "sa_addr_to_str().");
 					continue;
 				}
 				if (sizeof(url6_buf) > (url6_size + (tm - 7))) {
@@ -389,9 +375,9 @@ no_svc_type:
 					url6 = url6_buf;
 					url6_size += (tm - 4);
 					url6_buf[url6_size] = 0;
-					LOG_INFO((const char*)url6);
+					syslog(LOG_INFO, "%s", (const char*)url6);
 				} else {
-					LOG_EV("URL to long, not enough buf space.");
+					syslog(LOG_ERR, "URL to long, not enough buf space.");
 					url6 = NULL;
 					url6_size = 0;						
 				}
@@ -402,7 +388,7 @@ no_svc_type:
 			    (const char*)url4, url4_size,
 			    (const char*)url6, url6_size);
 			if (0 != error) {
-				LOG_ERR(error, "upnp_ssdp_dev_if_add()");
+				SYSLOG_ERR(LOG_WARNING, error, "upnp_ssdp_dev_if_add().");
 				continue;
 			}
 		}
@@ -413,7 +399,7 @@ no_svc_type:
 
 	if (0 == upnp_ssdp_root_dev_count(upnp_ssdp) ||
 	    0 == upnp_ssdp_if_count(upnp_ssdp)) {
-		LOG_INFO("no announce devices specified or no network ifaces, nothink to do...");
+		syslog(LOG_NOTICE, "No announce devices specified or no network ifaces, nothink to do...");
 		goto err_out;
 	}
 
@@ -434,8 +420,8 @@ err_out:
 		unlink(cmd_line_data.pid_file_name); /* Remove pid file. */
 	}
 	tp_destroy(tp);
-	LOG_INFO("exiting.");
-	close((int)g_log_fd);
+	syslog(LOG_NOTICE, "Exiting.");
+	closelog();
 
 	return (error);
 }
