@@ -104,6 +104,7 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="root">
+    <File Name=".editorconfig"/>
     <File Name="ssdpd.conf.debug"/>
     <File Name="readme.md"/>
     <File Name="test.txt"/>
