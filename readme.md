@@ -48,6 +48,15 @@ UPnP/DLNA PHP server requires
 2. PHP with fpm, fileinfo, soap, xml.
 
 
+## Run tests
+```
+mkdir -p build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=1 ..
+cmake --build . --config Release -j 16
+ctest -C Release --output-on-failure -j 16
+```
+
 ## Usage
 ```
 ssdpd [-d] [-v] [-c file]

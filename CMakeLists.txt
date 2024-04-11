@@ -3,7 +3,7 @@
 #
 
 ############################# INITIAL SECTION ##########################
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.20)
 
 project(ssdpd C)
 
@@ -21,7 +21,13 @@ set(PACKAGE_TARNAME		"${PACKAGE_NAME}-${PACKAGE_VERSION}")
 
 ############################# OPTIONS SECTION ##########################
 
-option(INSTALL_PHP_MEDIA_SERVER	"Install PHP UPnP/DLNA Media server [default: ON]"	OFF)
+option(INSTALL_PHP_MEDIA_SERVER	"Install PHP UPnP/DLNA Media server [default: OFF]"	OFF)
+option(ENABLE_TESTS		"Enable tests [default: OFF]"				OFF)
+if (ENABLE_TESTS)
+	# Enable testing functionality.
+	enable_testing()
+	set(ENABLE_LIBLCB_TESTS TRUE)
+endif()
 
 # Now CMAKE_INSTALL_PREFIX is a base prefix for everything.
 if (NOT CONFDIR)
@@ -240,6 +246,10 @@ add_definitions(-DHAVE_CONFIG_H)
 add_definitions(-DSOCKET_XML_CONFIG)
 include(src/liblcb/CMakeLists.txt)
 add_subdirectory(src)
+
+if (ENABLE_TESTS)
+	#add_subdirectory(tests)
+endif()
 
 ############################ TARGETS SECTION ###########################
 
