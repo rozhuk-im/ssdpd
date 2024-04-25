@@ -16,6 +16,7 @@ set(SSDPD_BIN		ssdpd.c
 			liblcb/src/utils/xml.c)
 
 add_executable(ssdpd ${SSDPD_BIN})
+target_compile_definitions(ssdpd PRIVATE -DSOCKET_XML_CONFIG)
 set_target_properties(ssdpd PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(ssdpd ${CMAKE_REQUIRED_LIBRARIES} ${CMAKE_EXE_LINKER_FLAGS})
 

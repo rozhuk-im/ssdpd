@@ -243,7 +243,6 @@ add_definitions(-DHAVE_CONFIG_H)
 
 ################################ SUBDIRS SECTION #######################
 
-add_definitions(-DSOCKET_XML_CONFIG)
 include(src/liblcb/CMakeLists.txt)
 add_subdirectory(src)
 
