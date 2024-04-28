@@ -127,7 +127,7 @@
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
-      <Compiler Options="" C_Options="-DHAVE_STRLCPY;-DHAVE_PIPE2;-DHAVE_ACCEPT4;-DHAVE_REALLOCARRAY;-DHAVE_MEMRCHR;-DHAVE_MEMMEM;-DHAVE_MEMSET_S;-DHAVE_EXPLICIT_BZERO;-DSOCKET_XML_CONFIG" Assembler="">
+      <Compiler Options="" C_Options="-DHAVE_STRLCPY;-DHAVE_PIPE2;-DHAVE_ACCEPT4;-DHAVE_REALLOCARRAY;-DHAVE_MEMRCHR;-DHAVE_MEMMEM;-DHAVE_MEMSET_S;-DHAVE_EXPLICIT_BZERO;-DSOCKET_XML_CONFIG;-DHAVE_KQUEUEX;-DHAVE_TIMINGSAFE_BCMP" Assembler="">
         <IncludePath Value="$(IntermediateDirectory)"/>
         <IncludePath Value="../"/>
         <IncludePath Value="../src"/>
