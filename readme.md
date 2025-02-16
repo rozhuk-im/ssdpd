@@ -6,7 +6,7 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/?branch=master)
 
 
-Rozhuk Ivan <rozhuk.im@gmail.com> 2013-2024
+Rozhuk Ivan <rozhuk.im@gmail.com> 2013-2025
 
 SSDPd - Announces UPnP/DLNA device across network.
 You can use PHP script, nginx config and static files to
