@@ -6,7 +6,7 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/rozhuk-im/ssdpd/?branch=master)
 
 
-Rozhuk Ivan <rozhuk.im@gmail.com> 2013-2025
+Rozhuk Ivan <rozhuk.im@gmail.com> 2013-2026
 
 SSDPd - Announces UPnP/DLNA device across network.
 You can use PHP script, nginx config and static files to
@@ -38,8 +38,8 @@ git clone --recursive https://github.com/rozhuk-im/ssdpd.git
 cd ssdpd
 mkdir build
 cd build
-cmake ..
-make -j
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=true ..
+make -j 16
 ```
 
 

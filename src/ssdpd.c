@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2011-2024 Rozhuk Ivan <rozhuk.im@gmail.com>
+ * Copyright (c) 2011-2026 Rozhuk Ivan <rozhuk.im@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,6 +112,7 @@ main(int argc, char *argv[]) {
 	uint8_t url4_buf[1024], url6_buf[1024];
 	struct sockaddr_storage addr;
 	tp_settings_t tp_s;
+	tp_params_t tp_prms;
 
 	error = read_file(cmd_line_data.cfg_file_name, 0, 0, 0,
 	    CFG_FILE_MAX_SIZE, &cfg_file_buf, &cfg_file_buf_size);
@@ -140,17 +141,20 @@ main(int argc, char *argv[]) {
 	syslog(LOG_INFO, "CPU count: %d.", get_cpu_count());
 	syslog(LOG_INFO, "Descriptor table size: %d (max files).", getdtablesize());
 
+	/* Thread pool. */
 	/* Thread pool settings. */
 	tp_settings_def(&tp_s);
 	tp_s.flags = 0;
 	tp_s.threads_max = 1;
-	error = tp_create(&tp_s, &tp);
+	/* Params. */
+	memset(&tp_prms, 0x00, sizeof(tp_prms));
+	strlcpy(tp_prms.name, "Events pool", sizeof(tp_prms.name));
+	tp_prms.flags = TP_P_F_CLOEXEC;
+	error = tp_create(&tp_s, &tp_prms, &tp);
 	if (0 != error) {
 		SYSLOG_ERR(LOG_CRIT, error, "tp_create().");
 		goto err_out;
 	}
-	tp_threads_create(tp, 1); /* XXX exit rewrite. */
-
 
 	/* SSDP receiver. */
 	if (0 == SSDPD_CFG_CALC_VAL_COUNT("announceList", "announce", NULL)) {
@@ -409,9 +413,18 @@ no_svc_type:
 	write_pid(cmd_line_data.pid_file_name); /* Store pid to file. */
 	set_user_and_group(cmd_line_data.pw_uid, cmd_line_data.pw_gid); /* Drop rights. */
 
+	/* Create and start threads. */
+	error = tp_threads_create(tp);
+	if (0 != error) {
+		SYSLOG_ERR(LOG_CRIT, error, "tp_threads_create().");
+		goto err_out;
+	}
+
 	/* Receive and process packets. */
-	tp_thread_attach_first(tp);
-	tp_shutdown_wait(tp);
+	error = tp_shutdown_wait(tp);
+	if (0 != error) {
+		SYSLOG_ERR(LOG_ERR, error, "tp_shutdown_wait().");
+	}
 
 err_out:
 	/* Deinitialization... */
