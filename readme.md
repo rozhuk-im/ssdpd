@@ -33,13 +33,9 @@ Support the author
 
 ## Compilation and Installation
 ```
-sudo apt-get install build-essential git cmake fakeroot
+sudo apt-get install build-essential git fakeroot
 git clone --recursive https://github.com/rozhuk-im/ssdpd.git
-cd ssdpd
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=true ..
-make -j 16
+./ssdpd/make.sh
 ```
 
 
@@ -47,15 +43,6 @@ UPnP/DLNA PHP server requires
 1. nginx with headers_more.
 2. PHP with fpm, fileinfo, soap, xml.
 
-
-## Run tests
-```
-mkdir -p build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=1 ..
-cmake --build . --config Release -j 16
-ctest -C Release --output-on-failure -j 16
-```
 
 ## Usage
 ```

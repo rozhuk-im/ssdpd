@@ -1,3 +1,6 @@
-[submodule "src/liblcb"]
-	path = src/liblcb
+[submodule "3rdparty/liblcb"]
+	path = 3rdparty/liblcb
 	url = https://github.com/rozhuk-im/liblcb.git
+[submodule "3rdparty/ssbs"]
+	path = 3rdparty/ssbs
+	url = https://github.com/rozhuk-im/ssbs.git

@@ -66,9 +66,6 @@
 #define SSDPD_CFG_GET_VAL_UINT(next_pos, val_ret, args...)		\
 	xml_get_val_uint32_args(cfg_file_buf, cfg_file_buf_size, next_pos, \
 	    val_ret, (const uint8_t*)"ssdpd", ##args)
-#define SSDPD_CFG_GET_VAL_SIZE(next_pos, val_ret, args...)		\
-	xml_get_val_size_t_args(cfg_file_buf, cfg_file_buf_size, next_pos, \
-	    val_ret, (const uint8_t*)"ssdpd", ##args)
 
 
 int
